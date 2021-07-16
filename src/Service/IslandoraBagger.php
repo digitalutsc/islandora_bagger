@@ -257,12 +257,13 @@ class IslandoraBagger
         $response = $client->post($drupal_url, ['auth' => [$username, $password], 'headers' => ['Content-Type' => 'application/json'], 'body' => $post_data]);
         $response_body = (string) $response->getBody();
         $response_body = json_decode($response_body, TRUE);
-        $this->logger->info(
+
+        /*$this->logger->info(
             "Bag registered with Islandora Bagger Integration.",
             array(
                'node URL' => $this->settings['drupal_base_url'] . '/node/' . $nid,
                'entry ID' => $response_body['islandora_bagger_integration_bag_log_id']
             )
-        );
+        );*/
     }
 }

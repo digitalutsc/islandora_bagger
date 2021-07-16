@@ -1,0 +1,110 @@
+####################
+# General settings #
+####################
+
+# Required.
+drupal_base_url: http://drupalvm.test
+drupal_basic_auth: ['admin', 'islandora']
+
+# Required. How to name the Bag directory (or file if serialized). One of 'nid' or 'uuid'.
+bag_name: nid
+
+# Both temp_dir and output_dir are required.
+temp_dir: /tmp/islandora_bagger_temp
+output_dir: /var/www/drupalvm/drupal/web/modules/custom/islandora_bagger/tmp
+
+# Required. Whether or not to zip up the Bag. This is the file extension to append as well as the archive type.
+# One of 'false', 'zip', 'tar, 'tar.gz' ('tgz' also supported) or 'tar.bz2'.
+serialize: false
+
+# Required. Whether or not to log Bag creation. Set log output path in config/packages/{environment}/monolog.yaml.
+log_bag_creation: true
+
+# Required. Static bag-info.txt tags. No plugin needed. You can use any combination
+# of tag name / value here, as long as you separate tags from values using a colon (:).
+# DO NOT remove any of the 4 existing tags, these are required, but you may add additional
+# tags (following the guidelines specified above) as required
+bag-info:
+  Contact-Name: John Guirgis
+  Contact-Email: islandora.bagger@gmail.com
+  Namespace: dsu
+  Message: "hey there"
+
+
+# Optional. Which hash algorithm to use.
+# One of 'md5', 'sha1', 'sha224', 'sha256', 'sha384', 'sha512', 'sha3224', 'sha3256', 'sha3384', 'sha3512'
+# Default is sha512.
+# hash_algorithm: sha512
+
+# Optional. Timeout to use for Guzzle requests, in seconds. Default is 60.
+# http_timeout: 120
+
+# Optional. Whether or not to verify the Certificate Authority in Guzzle requests
+# against websites that implement HTTPS. Used on Mac OSX if Islandora Bagger is
+# interacting with websites running HTTPS. Default is true. Note that if you set
+# verify_ca to false, you are bypassing HTTPS encryption between Islandora Bagger
+# and the remote website. Use at your own risk.
+# verify_ca: false
+
+# Optional. Whether or not to delete the settings file upon successful creation
+# of the Bag. Default is false.
+# delete_settings_file: true
+
+# Optional. Whether or not to log the serialized Bag's location so Islandora can
+# retrieve the Bag's download URL. Default is false.
+log_bag_location: true
+
+# register_bags_with_islandora: true
+
+############################
+# Plugin-specific settings #
+############################
+
+# Required. Register plugins to populate bag-info.txt and the data directory.
+# Plugins are executed in the order they are listed here.
+plugins: ['AddMediaJson_IslandoraLite', 'AddFile_IslandoraLite','AddFileJson_IslandoraLite',
+          'AddFileJsonld_IslandoraLite', 'AddMediaJsonld_IslandoraLite', 'AddNodeJson_IslandoraLite', 'AddNodeJsonld']
+
+# Used by the 'AddFedoraTurtle' plugin.
+fedora_base_url: 'http://localhost:8080/fcrepo/rest/'
+
+# Required by 'AddNodeJson_IslandorLite' plugin. These are the taxonomy fields that
+# will be modified by the 'AddNodeJson_IslandorLite' plugin. Entries MUST be machine names
+# of valid taxonomy fields in the node
+relevant_taxonomies: ['field_subject']
+
+# Required by 'AddNodeJson_IslandorLite' plugin. These are the fields that will be added
+# to the 'field_subject' in node.json.
+# Choose from: { revision_id, langcode, vid, revision_created, revision_user, revision_log_message.
+# status, name, description, weight, parent, changed, default_langcode, revision_translation_affected,
+# path, content_translation_source, content_translation_outdated, content_translation_uid,
+# content_translation_created, field_authority_link }
+# Use an empty string (e.g., '') to include all available information
+# Use an empty list (e.g., []) to include only default information (id, type, uuid, and url)
+taxonomy_info: ['name', 'changed', 'description']
+
+# Required by 'AddNodeJson_IslandorLite' plugin. These are the fields that will be added
+# to the 'field_member_of' in node.json.
+# Use an empty string (e.g., '') to include all available information
+# Use an empty list (e.g., []) to include only default information (id, type, uuid, and url)
+# If any taxonomy field from 'relevant_taxonomies' is included here, it will also be subject
+# to the expansion specified by 'taxonomy_info
+collection_info: ['title', 'field_subject']
+
+# Used by the 'AddMedia' plugin. Indicates whether the Bag should contain a file
+# named 'media_use_summary.tsv' that lists all the media files plus the taxonomy
+# name corresponding to the 'drupal_media_tags' list. Default is false.
+include_media_use_list: true
+
+# Required. Media types that will be processed by plugins.
+# These correspond to the media specifier in the media type machine name.
+# For example, to add a media type with machine name field_media_foo,
+# you would just add 'foo' to the array
+media_types: ['image', 'document', 'audio_file', 'video_file', 'oembed_video']
+
+####################
+# Post-Bag scripts #
+####################
+
+post_bag_scripts: ["bash src/PostBagScripts/validate.sh", "bash src/PostBagScripts/rename.sh"]
+

@@ -33,9 +33,12 @@ is the corresponding language code.
 
 - `taxonomy_info`: specifies the fields that will be added to the taxonomies specified in `relevant_taxonomies` 
 in the node JSON.
+
+- `content_references`: specifies which entity references of the node will be modified (see `content_type_info` for more information)
   
-- `collection_info`: specifies the fields that will be added to the node's collection information (i.e. to `field_member_of`)
-in the node JSON.
+- `content_type_info`: specifies the fields that will be added to the entity references specified in `content_references`
+  in the node JSON.
+  
 
 ### AddFileJson_IslandoraLite
 Adds the JSON representation of each file related to media referenced by the Islandora Repository item.
@@ -65,10 +68,12 @@ the two-letter language code to `supplementary/langcodes` (do `echo [code]>>supp
 two letter language code)
 
 ## Post Bag Scripts
-Two post bag (bash) scripts are included but you may add more following the instructions [here](https://github.com/mjordan/islandora_bagger#post-bag-scripts).
+Three post bag scripts are included but you may add more following the instructions [here](https://github.com/mjordan/islandora_bagger#post-bag-scripts).
 ### rename
 #### Description
-Renames the bag according to the following format: `{nid}_{uuid}_{namespace}`
+Renames the bag according to the following format: `{nid}_{uuid}_{namespace}`, 
+available as python and bash shell script (python recommended)
+To use, set `serialize` to `false`or `zip`
 #### Relevant configuration information
 - `namespace`: (found under `bag-info`) specifies the namespace used for naming the bag
 
@@ -79,11 +84,26 @@ The OCFL object will be created in the `islandora_bagger` directory according to
 same naming convention as the bag (`{nid}_{uuid}_{namespace}`). If you will be using both the `rename`
 and `validate` scripts, you ***must*** place the `rename` script ***after*** the `validate` script.
 This script uses the [oclf-py tool](https://github.com/zimeon/ocfl-py).
+Available as python and bash shell script (python recommended). To use, set `serialize` to `false`
+or `zip`
+
 #### Relevant configuration information
 - `Namespace`: (found under `bag-info`) specifies the namespace used for naming the OCFL object
 - `Contact-Name`: (found under `bag-info`) specifies the username that will be placed in the `inventory.json`
 - `Contact-Email`: (found under `bag-info`) specifies the user-address that will be placed in the `inventory.json`
 - `Message`: (found under `bag-info`) an optional message to be added to the `inventory.json`
+
+### uiIntegration
+#### Description
+Copies the contents of the output directory into the Drupal public file system to allow for support of the [Islandora 
+Bagger UI](https://github.com/mjordan/islandora_bagger_integration). If you do not want to also have a copy of your
+files in a directory outside of the Drupal public file system, you may simply set the `output_dir` to Drupal public file system path
+and omit this script.
+
+#### Relevant configuration information 
+- `output_dir`: the original location of the bag
+- `drupal_public_dir`: the full path to the Drupal public file system, can be found under `/admin/config/media/file-system` 
+
 ## Bag Structure
 ```text
 /tmp/112_2fa72847-287e-462e-adb8-410bb0ad1dea_dsu

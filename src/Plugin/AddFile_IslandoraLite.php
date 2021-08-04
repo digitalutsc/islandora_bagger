@@ -50,6 +50,7 @@ class AddFile_IslandoraLite extends AbstractIbPlugin
         'query' => ['_format' => 'json'],
       ]);
       $x = json_decode((string) $file_json->getBody(), TRUE);
+
       $p = 0;
       $media_types = $this->settings['media_types'];
       while($p < count($media_types) && !property_exists((object)$x, 'field_media_' . $media_types[$p])){
@@ -59,19 +60,17 @@ class AddFile_IslandoraLite extends AbstractIbPlugin
       //get json for each file in each media entity
       if($x['bundle'][0]['target_id'] != 'remote_video'){
 
-        $arr = explode("/", $x['field_media_' . $media_types[$p]][0]['url']);//end($x)[0]['url']);
+        $arr = explode("/", $x['field_media_' . $media_types[$p]][0]['url']);
         $foldername = end($arr);
-        for ($j = 0; $j < count($x['field_media_' . $media_types[$p]]); $j++){//count(end($x)); $j++){
-          $file_response = $file_client->get($x['field_media_' . $media_types[$p]][$j]['url'], ['stream' => true,//end($x)[$j]['url'], ['stream' => true,
+        for ($j = 0; $j < count($x['field_media_' . $media_types[$p]]); $j++){
+          $file_url = $this->getFileUrl($x['field_media_' . $media_types[$p]][$j]['target_id']);
+          $file_response = $file_client->get($file_url, ['stream' => true, //$x['field_media_' . $media_types[$p]][$j]['url'], ['stream' => true,
             'timeout' => $this->settings['http_timeout'],
             'connect_timeout' => $this->settings['http_timeout'],
             'verify' => $this->settings['verify_ca']
           ]);
-
-          //may need to actually loop thru and find the relevant field
-          $arr = explode("/", $x['field_media_' . $media_types[$p]][$j]['url']);//end($x)[$j]['url']);
+          $arr = explode("/", $x['field_media_' . $media_types[$p]][$j]['url']);
           $filename = end($arr);
-        //  $filename = $x["mid"][0]["value"];
           $temp_file_path = $bag_temp_dir . DIRECTORY_SEPARATOR . $filename; //change file name to media id
           $temp_file_path = $bag_temp_dir . DIRECTORY_SEPARATOR . $x["mid"][0]["value"] . "_" . $filename;
           if (file_exists($temp_file_path)) continue;
@@ -106,7 +105,8 @@ class AddFile_IslandoraLite extends AbstractIbPlugin
 
 
       //repeat for thumbnail
-      $file_response = $file_client->get($x['thumbnail'][0]['url'], ['stream' => true,
+      $tn_url = $this->getFileUrl($x['thumbnail'][0]['target_id']);
+      $file_response = $file_client->get($tn_url, ['stream' => true, //$x['thumbnail'][0]['url'], ['stream' => true,
         'timeout' => $this->settings['http_timeout'],
         'connect_timeout' => $this->settings['http_timeout'],
         'verify' => $this->settings['verify_ca']
@@ -127,7 +127,6 @@ class AddFile_IslandoraLite extends AbstractIbPlugin
 
       $path = DIRECTORY_SEPARATOR .  $x["mid"][0]["value"] . DIRECTORY_SEPARATOR . $x['thumbnail'][0]['target_id'] . DIRECTORY_SEPARATOR .$tn_name;
 
-      // var_dump($bag);
       if (!in_array($path, $added_to_bag)){
         $bag->addFile($temp_file_path, $path);
         $added_to_bag[] = $path;
@@ -135,26 +134,22 @@ class AddFile_IslandoraLite extends AbstractIbPlugin
     }
     return $bag;
   }
-
-  protected function getFilenameFromUrl($url)
-  {
-    $path = parse_url($url, PHP_URL_PATH);
-    $filename = pathinfo($path, PATHINFO_BASENAME);
-    return $filename;
-  }
-
-  protected function fetchTermInfo($term)
-  {
-    $client = new \GuzzleHttp\Client();
-    $url = $this->settings['drupal_base_url'] . $term;
-    $response = $client->request('GET', $url, [
-      'http_errors' => false,
+  protected function getFileUrl($fid): string {
+    $headers = @get_headers(str_replace("\n", "", $this->settings['drupal_base_url'] . "/entity/file/" . $fid));
+    if (str_ends_with($headers[0], '404 Not Found'))
+      $file_location = '/file/';
+    else
+      $file_location = "/entity/file/";
+    //get the file json
+    $file_client = new \GuzzleHttp\Client();
+    $file_json = $file_client->request('GET', $this->settings['drupal_base_url'] . $file_location . $fid, [
+      'http_errors' => FALSE,
       'auth' => $this->settings['drupal_basic_auth'],
-      'query' => ['_format' => 'json']
+      'query' => ['_format' => 'json'],
     ]);
-    $body = (string) $response->getBody();
-    $tag_info = json_decode($body, true);
-    return $tag_info;
+    $file_json = json_decode((string)$file_json->getBody(), TRUE);
+    return $this->settings['drupal_base_url'] .$file_json["uri"][0]['url'];
   }
+
 }
 

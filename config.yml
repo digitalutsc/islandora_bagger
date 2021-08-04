@@ -3,6 +3,7 @@
 ####################
 
 # Required.
+# Omit any trailing '/' from 'drupal_base_url
 drupal_base_url: http://drupalvm.test
 drupal_basic_auth: ['admin', 'islandora']
 
@@ -11,7 +12,7 @@ bag_name: nid
 
 # Both temp_dir and output_dir are required.
 temp_dir: /tmp/islandora_bagger_temp
-output_dir: /var/www/drupalvm/drupal/web/modules/custom/islandora_bagger/tmp
+output_dir: /var/www/drupalvm/drupal/web/modules/custom/islandora_bagger1/tmp
 
 # Required. Whether or not to zip up the Bag. This is the file extension to append as well as the archive type.
 # One of 'false', 'zip', 'tar, 'tar.gz' ('tgz' also supported) or 'tar.bz2'.
@@ -56,6 +57,10 @@ log_bag_location: true
 
 # register_bags_with_islandora: true
 
+drupal_temp_dir: "/tmp"
+
+drupal_public_dir: "/var/www/drupalvm/drupal/web/sites/default/files"
+
 ############################
 # Plugin-specific settings #
 ############################
@@ -83,13 +88,19 @@ relevant_taxonomies: ['field_subject']
 # Use an empty list (e.g., []) to include only default information (id, type, uuid, and url)
 taxonomy_info: ['name', 'changed', 'description']
 
+# Required by 'AddNodeJson_IslandorLite' plugin. The entity references that will be
+# modified by the 'AddNodeJson_IslandorLite' plugin. Entries MUST be machine names
+# of valid entity references in the node
+content_references: ['field_member_of']
+
 # Required by 'AddNodeJson_IslandorLite' plugin. These are the fields that will be added
-# to the 'field_member_of' in node.json.
+# to the references specified in content_references in node.json.
 # Use an empty string (e.g., '') to include all available information
 # Use an empty list (e.g., []) to include only default information (id, type, uuid, and url)
 # If any taxonomy field from 'relevant_taxonomies' is included here, it will also be subject
 # to the expansion specified by 'taxonomy_info
-collection_info: ['title', 'field_subject']
+content_type_info: ['title', 'field_subject']
+
 
 # Used by the 'AddMedia' plugin. Indicates whether the Bag should contain a file
 # named 'media_use_summary.tsv' that lists all the media files plus the taxonomy
@@ -105,6 +116,4 @@ media_types: ['image', 'document', 'audio_file', 'video_file', 'oembed_video']
 ####################
 # Post-Bag scripts #
 ####################
-
-post_bag_scripts: ["bash src/PostBagScripts/validate.sh", "bash src/PostBagScripts/rename.sh"]
-
+post_bag_scripts: ["python3 src/PostBagScripts/rename.py", "python3 src/PostBagScripts/validate.py"]

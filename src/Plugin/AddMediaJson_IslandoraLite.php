@@ -83,7 +83,7 @@ class AddMediaJson_IslandoraLite extends AbstractIbPlugin
     foreach (file("supplementary/langcodes") as $line){
       //check for a translation with each language code
       $file_headers = @get_headers(str_replace("\n", "", $this->settings['drupal_base_url'] . DIRECTORY_SEPARATOR . $line . $media_url));
-      if ($file_headers && $file_headers[0] != 'HTTP/1.1 404 Not Found')
+      if ($file_headers && !str_ends_with($file_headers[0], '404 Not Found'))
         $valid_langs[] = $line;
     }
     return $valid_langs;

@@ -63,44 +63,52 @@ class AddNodeJson_IslandoraLite extends AbstractIbPlugin
 
       $this->expandTaxanomy($taxonomies, $arr);
       //Gather user-specified info about each collection
-      if (!count($this->settings['collection_info'])) goto bag_creation; //empty array => no further modifications
-      $collections = $arr['field_member_of'];
+      if (!count($this->settings['content_type_info'])) goto bag_creation; //empty array => no further modifications
+  //    $collections = $arr['field_member_of'];
       $all = false;
-      if ($this->settings['collection_info'][0] == '') $all = true; //get all info
+      if ($this->settings['content_type_info'][0] == '') $all = true; //get all info
 
       $collection_client = new \GuzzleHttp\Client();
-      for ($y = 0; $y < count($collections); $y++){
-        $result = $collection_client->request('GET', $this->settings['drupal_base_url'] . $collections[0]['url'], [
-          'http_errors' => FALSE,
-          'auth' => $this->settings['drupal_basic_auth'],
-          'query' => ['_format' => 'json']
-        ]);
-        $collection_json = json_decode((string) $result->getBody(), TRUE);
-        //check for special case, with all info
-        $collection_info = $all ? array_keys($collection_json) : $this->settings['collection_info'];
-        //gather all fields in collection_info
-        for ($u = 0; $u < count($collection_info); $u++){
-          if (in_array($collection_info[$u], ['nid', 'uuid'])) continue; //skip over fields since they are in the JSON already
-          if (!in_array($collection_info[$u], array_keys($collection_json))) { //error checking
-            if (!in_array($collection_info[$u], $invalids)) { //no need to repeat error message
-              echo "\033[01;31m ERROR: invalid field, \033[0m" . "\033[01;31m'" . $collection_info[$u] . "', skipping...\033[0m\n";
-              $invalids[] = $collection_info[$u];
+      $content_references = $this->settings['content_references'];
+      for ($p = 0; $p < count($content_references); $p++){
+        $collections = $arr[$content_references[$p]];
+        for ($y = 0; $y < count($collections); $y++) {
+          $result = $collection_client->request('GET', $this->settings['drupal_base_url'] . $collections[0]['url'], [
+            'http_errors' => FALSE,
+            'auth' => $this->settings['drupal_basic_auth'],
+            'query' => ['_format' => 'json'],
+          ]);
+          $collection_json = json_decode((string) $result->getBody(), TRUE);
+          //check for special case, with all info
+          $collection_info = $all ? array_keys($collection_json) : $this->settings['content_type_info'];
+          //gather all fields in collection_info
+          for ($u = 0; $u < count($collection_info); $u++) {
+            if (in_array($collection_info[$u], ['nid', 'uuid'])) {
+              continue;
+            } //skip over fields since they are in the JSON already
+            if (!in_array($collection_info[$u], array_keys($collection_json))) { //error checking
+              if (!in_array($collection_info[$u], $invalids)) { //no need to repeat error message
+                echo "\033[01;31m ERROR: invalid field, \033[0m" . "\033[01;31m'" . $collection_info[$u] . "', skipping...\033[0m\n";
+                $invalids[] = $collection_info[$u];
+              }
+              continue;
             }
-            continue;
+            if (!count($collection_json[$collection_info[$u]])) { //field is empty => add empty array
+              $arr['field_member_of'][$y]["target_" . $collection_info[$u]] = [];
+              continue;
+            }
+            $arr['field_member_of'][$y]["target_" . $collection_info[$u]] = count($collection_json[$collection_info[$u]][0]) == 1 ?
+              $collection_json[$collection_info[$u]][0][array_keys($collection_json[$collection_info[$u]][0])[0]] :
+              $collection_json[$collection_info[$u]];
           }
-          if (!count($collection_json[$collection_info[$u]])){ //field is empty => add empty array
-            $arr['field_member_of'][$y]["target_" . $collection_info[$u]] = [];
-            continue;
+          $collection_taxonomies = [];
+          foreach ($taxonomies as $tax) {
+            if (in_array("target_" . $tax, array_keys($arr['field_member_of'][$y]))) {
+              $collection_taxonomies[] = "target_" . $tax;
+            }
           }
-          $arr['field_member_of'][$y]["target_" . $collection_info[$u]] = count($collection_json[$collection_info[$u]][0]) == 1 ?
-            $collection_json[$collection_info[$u]][0][array_keys($collection_json[$collection_info[$u]][0])[0]] :
-            $collection_json[$collection_info[$u]];
+          $this->expandTaxanomy($collection_taxonomies, $arr['field_member_of'][$y]);
         }
-        $collection_taxonomies = [];
-        foreach ($taxonomies as $tax){
-          if (in_array("target_" .$tax, array_keys($arr['field_member_of'][$y]))) $collection_taxonomies[] = "target_" . $tax;
-        }
-        $this->expandTaxanomy($collection_taxonomies, $arr['field_member_of'][$y]);
       }
       bag_creation:
       $bag->createFile(json_encode($arr, JSON_PRETTY_PRINT), 'node_' . $jsonld['@graph'][0]['dcterms:title'][$x]['@language'] . ".json");

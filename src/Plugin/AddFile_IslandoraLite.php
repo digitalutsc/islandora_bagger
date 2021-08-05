@@ -63,14 +63,14 @@ class AddFile_IslandoraLite extends AbstractIbPlugin
         $arr = explode("/", $x['field_media_' . $media_types[$p]][0]['url']);
         $foldername = end($arr);
         for ($j = 0; $j < count($x['field_media_' . $media_types[$p]]); $j++){
-          $file_url = $this->getFileUrl($x['field_media_' . $media_types[$p]][$j]['target_id']);
+          list($file_url, $filename) = $this->getFileInfo($x['field_media_' . $media_types[$p]][$j]['target_id']);
           $file_response = $file_client->get($file_url, ['stream' => true, //$x['field_media_' . $media_types[$p]][$j]['url'], ['stream' => true,
             'timeout' => $this->settings['http_timeout'],
             'connect_timeout' => $this->settings['http_timeout'],
             'verify' => $this->settings['verify_ca']
           ]);
-          $arr = explode("/", $x['field_media_' . $media_types[$p]][$j]['url']);
-          $filename = end($arr);
+        #  $arr = explode("/", $x['field_media_' . $media_types[$p]][$j]['url']);
+        #  $filename = end($arr);
           $temp_file_path = $bag_temp_dir . DIRECTORY_SEPARATOR . $filename; //change file name to media id
           $temp_file_path = $bag_temp_dir . DIRECTORY_SEPARATOR . $x["mid"][0]["value"] . "_" . $filename;
           if (file_exists($temp_file_path)) continue;
@@ -105,14 +105,14 @@ class AddFile_IslandoraLite extends AbstractIbPlugin
 
 
       //repeat for thumbnail
-      $tn_url = $this->getFileUrl($x['thumbnail'][0]['target_id']);
+      list($tn_url, $tn_name) = $this->getFileInfo($x['thumbnail'][0]['target_id']);
       $file_response = $file_client->get($tn_url, ['stream' => true, //$x['thumbnail'][0]['url'], ['stream' => true,
         'timeout' => $this->settings['http_timeout'],
         'connect_timeout' => $this->settings['http_timeout'],
         'verify' => $this->settings['verify_ca']
       ]);
-      $tn_arr = explode("/", $x['thumbnail'][0]['url']);
-      $tn_name = end($tn_arr);
+      #$tn_arr = explode("/", $x['thumbnail'][0]['url']);
+      #$tn_name = end($tn_arr);
       $temp_file_path = $bag_temp_dir . DIRECTORY_SEPARATOR . $tn_name;
 
      // if (file_exists($temp_file_path)) continue;
@@ -134,7 +134,7 @@ class AddFile_IslandoraLite extends AbstractIbPlugin
     }
     return $bag;
   }
-  protected function getFileUrl($fid): string {
+  protected function getFileInfo($fid){
     $headers = @get_headers(str_replace("\n", "", $this->settings['drupal_base_url'] . "/entity/file/" . $fid));
     if (str_ends_with($headers[0], '404 Not Found'))
       $file_location = '/file/';
@@ -148,8 +148,10 @@ class AddFile_IslandoraLite extends AbstractIbPlugin
       'query' => ['_format' => 'json'],
     ]);
     $file_json = json_decode((string)$file_json->getBody(), TRUE);
-    return $this->settings['drupal_base_url'] .$file_json["uri"][0]['url'];
+    return array($this->settings['drupal_base_url'] .$file_json["uri"][0]['url'],
+      $file_json['filename'][0]['value']);
   }
 
 }
+
 

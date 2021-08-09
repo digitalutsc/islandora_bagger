@@ -6,6 +6,12 @@ For instructions on [installing](https://github.com/mjordan/islandora_bagger#ins
 and other information
 not included here, please see the [Islandora Bagger Documentation](https://github.com/mjordan/islandora_bagger#islandora-bagger)
 
+## Installation
+1. Clone the Islandora Lite Bagger branch of this repository, `git clone -b IslandoraLiteBagger https://github.com/digitalutsc/islandora_bagger.git`
+2. `cd islandora_bagger`
+3. `php composer.phar install` (or equivalent on your system, e.g., `./composer install`)
+4. Clone the OCFL tool, `git clone https://github.com/zimeon/ocfl-py.git` (required for OCFL post bag scripts) 
+
 ## Usage
 As of now, the Islandora Lite Bagger only supports command line usage. To run the bagger
 on node `nid` with configuration file `config.yml`, use the command 

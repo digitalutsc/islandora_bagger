@@ -40,6 +40,8 @@ class AddNodeJson_IslandoraLite extends AbstractIbPlugin
     }
     $invalids = [];
     $arr = json_decode($node_json, TRUE);
+    $caller = debug_backtrace()[1]['function'];
+    $this->retreivePages($bag, $bag_temp_dir, $nid, $node_json);
     $client = new \GuzzleHttp\Client();
     //use the jsonld to get the translated languages
     $result = $client->request('GET', $this->settings['drupal_base_url'] . '/node/' . $nid, [
@@ -111,7 +113,7 @@ class AddNodeJson_IslandoraLite extends AbstractIbPlugin
         }
       }
       bag_creation:
-      $bag->createFile(json_encode($arr, JSON_PRETTY_PRINT), 'node_' . $jsonld['@graph'][0]['dcterms:title'][$x]['@language'] . ".json");
+      $bag->createFile(json_encode($arr, JSON_PRETTY_PRINT), $nid . '/node_' . $jsonld['@graph'][0]['dcterms:title'][$x]['@language'] . ".json");
     }
     return $bag;
   }
@@ -164,6 +166,38 @@ class AddNodeJson_IslandoraLite extends AbstractIbPlugin
               $taxonomy_json[$fields[$i]][0];
         }
       }
+    }
+  }
+  /**
+   * Initializes bagging for all pages of Paged content
+   */
+  protected function retreivePages(Bag $bag, $bag_temp_dir, $nid, $node_json){
+    $node_arr = json_decode($node_json, TRUE);
+    $tax_url = $node_arr['field_model'][0]['url'];
+    $client = new \GuzzleHttp\Client();
+    $result = $client->request('GET', $this->settings['drupal_base_url'] . $tax_url, [
+      'http_errors' => FALSE,
+      'auth' => $this->settings['drupal_basic_auth'],
+      'query' => ['_format' => 'json'],
+    ]);
+    $result = json_decode((string) $result->getBody(), TRUE);
+    $model = $result['name'][0]['value'];
+    if ($model != 'Paged Content') return;
+    //otherwise, we have a book, get children
+    $url = $this->settings['drupal_base_url'] . '/node/' . $nid . '/children_rest';
+    $children_result = $result = $client->request('GET', $url, [
+      'http_errors' => FALSE,
+      'auth' => $this->settings['drupal_basic_auth'],
+      'query' => ['_format' => 'json'],
+    ]);
+    $children_result_arr = json_decode((string) $children_result->getBody(), TRUE);
+    for($i = 0; $i < count($children_result_arr); $i++){
+      $page_json = $client->request('GET', $this->settings['drupal_base_url'] . '/node/' . $children_result_arr[$i]['nid'], [
+        'http_errors' => FALSE,
+        'auth' => $this->settings['drupal_basic_auth'],
+        'query' => ['_format' => 'json'],
+      ]);
+      $this->execute($bag, $bag_temp_dir, $children_result_arr[$i]['nid'], (string) $page_json->getBody());
     }
   }
 }

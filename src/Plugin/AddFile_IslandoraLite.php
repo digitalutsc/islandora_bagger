@@ -34,6 +34,7 @@ class AddFile_IslandoraLite extends AbstractIbPlugin
    */
   public function execute(Bag $bag, $bag_temp_dir, $nid, $node_json)
   {
+    $this->retreivePages($bag, $bag_temp_dir, $nid, $node_json);
 
     $media_client = new \GuzzleHttp\Client();
     $json = json_decode((string) $node_json, TRUE);
@@ -81,13 +82,12 @@ class AddFile_IslandoraLite extends AbstractIbPlugin
           }
           $path = "/media/" . $foldername . DIRECTORY_SEPARATOR . "media_content/". $filename;
           $fid = $x['field_media_' . $media_types[$p]][$j]['target_id'];
-          $path = DIRECTORY_SEPARATOR . $x["mid"][0]["value"] . DIRECTORY_SEPARATOR . $fid . DIRECTORY_SEPARATOR .$filename;
-
+          //$path = DIRECTORY_SEPARATOR . $x["mid"][0]["value"] . DIRECTORY_SEPARATOR . $fid . DIRECTORY_SEPARATOR .$filename;
+          $path = DIRECTORY_SEPARATOR . $nid . DIRECTORY_SEPARATOR . $x["mid"][0]["value"] . DIRECTORY_SEPARATOR . $fid . DIRECTORY_SEPARATOR .$filename;
           //!file_exists($temp_file_path) &&
           if (!in_array($path, $added_to_bag)){
             $bag->addFile($temp_file_path, $path);
             $added_to_bag[] = $path;
-
           }
         }
       }
@@ -96,7 +96,7 @@ class AddFile_IslandoraLite extends AbstractIbPlugin
         $video_url = $x['field_media_oembed_video'][0]['value'];
         $foldername = $x['name'][0]['value'];
         $path = "/media/" . $foldername . DIRECTORY_SEPARATOR . "media_content/video_url";
-        $path = DIRECTORY_SEPARATOR . $x["mid"][0]["value"] . DIRECTORY_SEPARATOR . DIRECTORY_SEPARATOR ."video_url";
+        $path = DIRECTORY_SEPARATOR . $nid . DIRECTORY_SEPARATOR . $x["mid"][0]["value"] . DIRECTORY_SEPARATOR . DIRECTORY_SEPARATOR ."video_url";
         if (!in_array($path, $added_to_bag)){
           $bag->createFile($video_url, $path);
           $added_to_bag[] = $path;
@@ -125,7 +125,7 @@ class AddFile_IslandoraLite extends AbstractIbPlugin
       // $path = "/media/" . $withoutExt . '(' . $ext . ')' . DIRECTORY_SEPARATOR . 'thumbnails/'. $tn_name;
       $path = "/media/" . $foldername . DIRECTORY_SEPARATOR . 'thumbnail/'. $tn_name;
 
-      $path = DIRECTORY_SEPARATOR .  $x["mid"][0]["value"] . DIRECTORY_SEPARATOR . $x['thumbnail'][0]['target_id'] . DIRECTORY_SEPARATOR .$tn_name;
+      $path = DIRECTORY_SEPARATOR . $nid . DIRECTORY_SEPARATOR . $x["mid"][0]["value"] . DIRECTORY_SEPARATOR . $x['thumbnail'][0]['target_id'] . DIRECTORY_SEPARATOR .$tn_name;
 
       if (!in_array($path, $added_to_bag)){
         $bag->addFile($temp_file_path, $path);
@@ -150,6 +150,38 @@ class AddFile_IslandoraLite extends AbstractIbPlugin
     $file_json = json_decode((string)$file_json->getBody(), TRUE);
     return array($this->settings['drupal_base_url'] .$file_json["uri"][0]['url'],
       $file_json['filename'][0]['value']);
+  }
+  /**
+   * Initializes bagging for all pages of Paged content
+   */
+  protected function retreivePages(Bag $bag, $bag_temp_dir, $nid, $node_json){
+    $node_arr = json_decode($node_json, TRUE);
+    $tax_url = $node_arr['field_model'][0]['url'];
+    $client = new \GuzzleHttp\Client();
+    $result = $client->request('GET', $this->settings['drupal_base_url'] . $tax_url, [
+      'http_errors' => FALSE,
+      'auth' => $this->settings['drupal_basic_auth'],
+      'query' => ['_format' => 'json'],
+    ]);
+    $result = json_decode((string) $result->getBody(), TRUE);
+    $model = $result['name'][0]['value'];
+    if ($model != 'Paged Content') return;
+    //otherwise, we have a book, get children
+    $url = $this->settings['drupal_base_url'] . '/node/' . $nid . '/children_rest';
+    $children_result = $result = $client->request('GET', $url, [
+      'http_errors' => FALSE,
+      'auth' => $this->settings['drupal_basic_auth'],
+      'query' => ['_format' => 'json'],
+    ]);
+    $children_result_arr = json_decode((string) $children_result->getBody(), TRUE);
+    for($i = 0; $i < count($children_result_arr); $i++){
+      $page_json = $client->request('GET', $this->settings['drupal_base_url'] . '/node/' . $children_result_arr[$i]['nid'], [
+        'http_errors' => FALSE,
+        'auth' => $this->settings['drupal_basic_auth'],
+        'query' => ['_format' => 'json'],
+      ]);
+      $this->execute($bag, $bag_temp_dir, $children_result_arr[$i]['nid'], (string) $page_json->getBody());
+    }
   }
 
 }

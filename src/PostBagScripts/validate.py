@@ -1,3 +1,6 @@
+"""
+This script creates and validates OCFL objects from bags
+"""
 import os
 import sys
 import yaml
@@ -47,12 +50,12 @@ else: #the bag has already undergone renaming
             i += 1
         srcdir = yml['output_dir'] + "/" + output[i]
 
-dirs = os.listdir(srcdir + "/data")
+dirs = os.listdir(srcdir + "/data/" + sys.argv[1])
 for file in dirs:
     if re.search('node_', file):
         final = file
         break
-json_file = open(srcdir + "/data/" + final)
+json_file = open(srcdir + "/data/" + sys.argv[1] + '/' + final)
 contents = json_file.read()
 json_file.close()
 json = json.loads(contents)

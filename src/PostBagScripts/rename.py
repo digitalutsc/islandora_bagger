@@ -1,3 +1,6 @@
+"""
+This script renames bags according to the convention nid_uuid_namespace
+"""
 import json
 import sys
 import os
@@ -5,7 +8,6 @@ import zipfile
 import re
 import yaml
 import shutil
-
 
 path = sys.argv[2]
 with open(sys.argv[3]) as f:
@@ -21,13 +23,13 @@ if yml['serialize'] == 'zip':
     dirs = os.listdir(path + "/" + sys.argv[1] + "/data")
     path = yml['output_dir'] + '/rename_temps/' + sys.argv[1]
 else:
-    dirs = os.listdir(path + "/data")
+    dirs = os.listdir(path + "/data/" + sys.argv[1])
 
 for file in dirs:
     if re.search('node_', file):
         final = file
         break
-json_file = open(path + "/data/" + final)
+json_file = open(path + "/data/" + sys.argv[1] + '/' + final)
 contents = json_file.read()
 json_file.close()
 json = json.loads(contents)

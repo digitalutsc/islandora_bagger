@@ -34,6 +34,9 @@ Adds the JSON representation of an Islandora Repository item to the bag. All ava
 of the node are added to the bag in the form `node_{lang}.json` where `{lang}` 
 is the corresponding language code.
 
+### AddNodeJsonld_IslandoraLite
+Adds the JSON-LD representation of an Islandora Repository item to the bag.
+
 #### Relevant configuration information
 - `relevant_taxonomies`: specifies which taxonomy fields of the node will be modified (see `taxonomy_info` for more information)
 
@@ -77,9 +80,8 @@ two letter language code)
 Three post bag scripts are included but you may add more following the instructions [here](https://github.com/mjordan/islandora_bagger#post-bag-scripts).
 ### rename
 #### Description
-Renames the bag according to the following format: `{nid}_{uuid}_{namespace}`, 
-available as python and bash shell script (python recommended)
-To use, set `serialize` to `false`or `zip`
+Renames the bag according to the following format: `{nid}_{uuid}_{namespace}`.
+To use, set `serialize` to `false` or `zip`
 #### Relevant configuration information
 - `namespace`: (found under `bag-info`) specifies the namespace used for naming the bag
 
@@ -90,8 +92,7 @@ The OCFL object will be created in the `islandora_bagger` directory according to
 same naming convention as the bag (`{nid}_{uuid}_{namespace}`). If you will be using both the `rename`
 and `validate` scripts, you ***must*** place the `rename` script ***after*** the `validate` script.
 This script uses the [oclf-py tool](https://github.com/zimeon/ocfl-py).
-Available as python and bash shell script (python recommended). To use, set `serialize` to `false`
-or `zip`
+To use, set `serialize` to `false` or `zip`
 
 #### Relevant configuration information
 - `Namespace`: (found under `bag-info`) specifies the namespace used for naming the OCFL object
@@ -116,26 +117,29 @@ and omit this script.
 ├── bag-info.txt
 ├── bagit.txt
 ├── data
-│   ├── 18
-│   │   └── 32
-│   │   └── 64
-│   │   │    └── file.txt
-│   │   │    └── thumbnail.jpeg
-│   │   │    └── file_en.json
-│   │   │    └── file.jsonld
-│   │   ├── media_en.json
-│   │   ├── media_en.json
-│   │   └── media.jsonld
-│   ├── 20
-│   ├── node_en.json
-│   ├── node_fr.json
-│   └── node.jsonld
+│   ├──112
+│   │   ├── 18
+│   │   │    ├── 32
+│   │   │    ├── 64
+│   │   │    │    ├── file.txt
+│   │   │    │    ├── thumbnail.jpeg
+│   │   │    │    ├── file_en.json
+│   │   │    │    └── file.jsonld
+│   │   │    ├── media_en.json
+│   │   │    ├── media_en.json
+│   │   │    └── media.jsonld
+│   │   ├── 20
+│   │   ├── node_en.json
+│   │   ├── node_fr.json
+│   │   └── node.jsonld
+│   └──113
 ├── manifest-sha1.txt
 └── tagmanifest-sha1.txt
 ```
 where,
-- `112`: the NID of the node being bagged 
+- `112`: the NID of the node being bagged
 - `2fa72847-287e-462e-adb8-410bb0ad1dea`: the UUID of the node being bagged
+- `113`: the NID of a page belonging node 112, when expanded, will follow the same strucutre as that of `112` 
 - `dsu`: the namespace of the node being bagged  
 - `18` & `20`: the MID of the media entities referenced by the node
 - `32` & `64`: the FID of the files belonging to media entity `18`

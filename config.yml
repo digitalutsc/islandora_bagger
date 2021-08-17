@@ -4,7 +4,7 @@
 
 # Required.
 # Omit any trailing '/' from 'drupal_base_url
-drupal_base_url: http://drupalvm.test
+drupal_base_url: http://localhost:8000
 drupal_basic_auth: ['admin', 'islandora']
 
 # Required. How to name the Bag directory (or file if serialized). One of 'nid' or 'uuid'.
@@ -12,7 +12,7 @@ bag_name: nid
 
 # Both temp_dir and output_dir are required.
 temp_dir: /tmp/islandora_bagger_temp
-output_dir: /var/www/drupalvm/drupal/web/modules/custom/islandora_bagger1/tmp
+output_dir: /full/path/to/output/directory
 
 # Required. Whether or not to zip up the Bag. This is the file extension to append as well as the archive type.
 # One of 'false', 'zip', 'tar, 'tar.gz' ('tgz' also supported) or 'tar.bz2'.
@@ -68,7 +68,8 @@ drupal_public_dir: "/var/www/drupalvm/drupal/web/sites/default/files"
 # Required. Register plugins to populate bag-info.txt and the data directory.
 # Plugins are executed in the order they are listed here.
 plugins: ['AddMediaJson_IslandoraLite', 'AddFile_IslandoraLite','AddFileJson_IslandoraLite',
-          'AddFileJsonld_IslandoraLite', 'AddMediaJsonld_IslandoraLite', 'AddNodeJson_IslandoraLite', 'AddNodeJsonld']
+          'AddFileJsonld_IslandoraLite', 'AddMediaJsonld_IslandoraLite', 
+          'AddNodeJson_IslandoraLite', 'AddNodeJsonld_IslandoraLite']
 
 # Used by the 'AddFedoraTurtle' plugin.
 fedora_base_url: 'http://localhost:8080/fcrepo/rest/'

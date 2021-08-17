@@ -8,7 +8,7 @@ import re
 import json
 import zipfile
 import shutil
-# os.s
+from pathlib import Path
 #parse configuration file
 with open(sys.argv[3]) as f:
     yml = yaml.safe_load(f)
@@ -39,9 +39,6 @@ else: #the bag has already undergone renaming
         with zipfile.ZipFile(yml['output_dir'] + '/' + temp[i], 'r') as zip_ref:
             zip_ref.extractall(path)
         srcdir = yml['output_dir'] + '/validate_temps/' + sys.argv[1] # os.path.splitext(temp[i])[0]
-        x = open('final_temp', 'w')
-        x.write(srcdir + '\n')
-        x.close()
     else:
         # srcdir = sys.argv[2]
         output = os.listdir(yml['output_dir'])
@@ -68,7 +65,7 @@ uuid = json['uuid'][0]['value']
 
 #need id, objdir, name, message, address
 id = nid + ':' + uuid + ':' + Namespace
-objdir = nid + '_' + uuid + '_' + Namespace
+objdir = str(Path(srcdir).parent.absolute()) + '/OCFL_objects/' + nid + '_' + uuid + '_' + Namespace
 
 os.system('python3 ocfl-py/ocfl-object.py --create --srcdir ' + srcdir + ' --id ' + id +
               ' --objdir ' + objdir + ' --name ' + name + ' --message ' + message + ' --address ' + address)

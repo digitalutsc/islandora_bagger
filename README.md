@@ -10,13 +10,18 @@ not included here, please see the [Islandora Bagger Documentation](https://githu
 1. Clone the Islandora Lite Bagger branch of this repository, `git clone -b IslandoraLiteBagger https://github.com/digitalutsc/islandora_bagger.git`
 2. `cd islandora_bagger`
 3. `php composer.phar install` (or equivalent on your system, e.g., `./composer install`)
-4. Clone the OCFL tool, `git clone https://github.com/zimeon/ocfl-py.git` (required for OCFL post bag scripts) 
+4. `pip3 install bagit fs fs-s3fs Pairtree PyYAML` (to install Python packages required for Post Bag Scripts)
+5. Clone the OCFL tool, `git clone https://github.com/zimeon/ocfl-py.git` (required for OCFL post bag scripts) 
 
 ## Usage
 As of now, the Islandora Lite Bagger only supports command line usage. To run the bagger
-on node `nid` with configuration file `config.yml`, use the command 
+on a single node with node ID `nid` and configuration file `config.yml`, use the command: 
 ```bash
 ./bin/console app:islandora_bagger:create_bag --settings=config.yml --node=nid
+```
+To run the bagger on multiple nodes, place the node IDs into a CSV file, `nodes.csv`, and in the `islandora_bagger` directory, run,
+```bash
+python3 supplementary/bagNodes.py nodes.csv
 ```
 For more information, see [here](https://github.com/mjordan/islandora_bagger#command-line-usage).
 

@@ -116,6 +116,20 @@ and omit this script.
 - `output_dir`: the original location of the bag
 - `drupal_public_dir`: the full path to the Drupal public file system, can be found under `/admin/config/media/file-system` 
 
+## Islandora Bagger Integration
+The Islandora Lite Bagger allows for bagging nodes directly from their page via the 
+[Islandora Bagger Integration module](https://github.com/mjordan/islandora_bagger_integration).
+To setup bagging directly from the Drupal user interface, follow these instructions.
+1. [Install](https://github.com/mjordan/islandora_bagger_integration#installation) and [configure](https://github.com/mjordan/islandora_bagger_integration#configuration) the Islandora Bagger Integration module.
+2. In the configuration file, do the following:
+  
+    1. Set `serialize` to zip or tar.
+    2. Set `drupal_public_dir` to your Drupal public file system
+    3. Set `post_bag_scripts` to `["python3 src/PostBagScripts/uiIntegration.py"]`
+3. Under `/admin/config/islandora_bagger_integration/settings`, select "Local", enter the full paths to the configuration file and your Islandora Lite installation, and save the configuration
+4. Click "Create Bag" in the Islandora Bagger Block on the node you want to bag
+
+
 ## Bag Structure
 ```text
 /tmp/112_2fa72847-287e-462e-adb8-410bb0ad1dea_dsu

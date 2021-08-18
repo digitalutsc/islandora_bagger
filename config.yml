@@ -12,11 +12,11 @@ bag_name: nid
 
 # Both temp_dir and output_dir are required.
 temp_dir: /tmp/islandora_bagger_temp
-output_dir: /full/path/to/output/directory
+output_dir: /var/www/html/drupal/web/modules/contrib/islandora_bagger
 
 # Required. Whether or not to zip up the Bag. This is the file extension to append as well as the archive type.
 # One of 'false', 'zip', 'tar, 'tar.gz' ('tgz' also supported) or 'tar.bz2'.
-serialize: false
+serialize: zip
 
 # Required. Whether or not to log Bag creation. Set log output path in config/packages/{environment}/monolog.yaml.
 log_bag_creation: true
@@ -57,9 +57,9 @@ log_bag_location: true
 
 # register_bags_with_islandora: true
 
-drupal_temp_dir: "/tmp"
-
-drupal_public_dir: "/var/www/drupalvm/drupal/web/sites/default/files"
+# Required for Islandora Bagger Integration. The full Drupal public file system path.
+# Can be found under /admin/config/media/file-system
+drupal_public_dir: "/var/www/html/drupal/web/sites/default/files/"
 
 ############################
 # Plugin-specific settings #

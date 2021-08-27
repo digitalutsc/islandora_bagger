@@ -41,9 +41,6 @@ if os.path.isdir(parent + "/" + new_name):
     shutil.rmtree(parent + "/" + new_name)
 if not isinstance(yml['serialize'], bool):
     new_name = new_name + "." + str(yml['serialize'])
-x = open('/var/www/html/drupal/web/modules/contrib/islandora_bagger/new_name', 'w')
-x.write('fehfjkdahfjkd')
-x.close()
 os.rename(sys.argv[2], parent + "/" + new_name)
 if os.path.isdir(yml['output_dir'] + '/rename_temps'):
     shutil.rmtree(yml['output_dir'] + '/rename_temps')

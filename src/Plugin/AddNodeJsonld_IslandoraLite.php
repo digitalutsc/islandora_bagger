@@ -35,6 +35,8 @@ class AddNodeJsonld_IslandoraLite extends AbstractIbPlugin
     public function execute(Bag $bag, $bag_temp_dir, $nid, $node_json)
     {
         $this->retreivePages($bag, $bag_temp_dir, $nid, $node_json);
+        $arr = json_decode($node_json, TRUE);
+        $vid = $arr['vid'][0]['value'];
         $client = new \GuzzleHttp\Client();
         $url = $this->settings['drupal_base_url'] . '/node/' . $nid;
         $response = $client->request('GET', $url, [
@@ -42,7 +44,7 @@ class AddNodeJsonld_IslandoraLite extends AbstractIbPlugin
             'query' => ['_format' => 'jsonld']
         ]);
         $node_jsonld = (string) $response->getBody();
-        $bag->createFile($node_jsonld, $nid . '/node.jsonld');
+        $bag->createFile($node_jsonld, 'node_' . $nid . '/node.jsonld');
 
         return $bag;
     }

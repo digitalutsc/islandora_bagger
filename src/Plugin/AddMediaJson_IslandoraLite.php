@@ -62,8 +62,9 @@ class AddMediaJson_IslandoraLite extends AbstractIbPlugin
           'auth' => $this->settings['drupal_basic_auth'],
           'query' => ['_format' => 'json']
         ]);
-        $filename = $nid . DIRECTORY_SEPARATOR . json_decode((string) $file_json->getBody(), TRUE)['mid'][0]['value']
-          . "/media_" . $curr_lang .".json";
+        $vid = json_decode((string) $file_json->getBody(), TRUE)['vid'][0]['value'];
+        $filename = 'node_' . $nid . DIRECTORY_SEPARATOR . 'media_' . json_decode((string) $file_json->getBody(), TRUE)['mid'][0]['value']
+          . "/media_" . $curr_lang . '.v' . $vid . ".json";
         $bag->createFile((string) $file_json->getBody(), $filename);
       }
     }

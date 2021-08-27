@@ -127,7 +127,7 @@ To setup bagging directly from the Drupal user interface, follow these instructi
     2. Set `drupal_public_dir` to your Drupal public file system
     3. Set `post_bag_scripts` to `["python3 src/PostBagScripts/uiIntegration.py"]`
 3. Under `/admin/config/islandora_bagger_integration/settings`, select "Local", enter the full paths to the configuration file and your Islandora Lite installation, and save the configuration
-4. Click "Create Bag" in the Islandora Bagger Block on the node you want to bag
+4. Click "Create Bag" in the Islandora Bagger Block on the node you want to bag and download the bag from the generated link. 
 
 
 ## Bag Structure

@@ -43,16 +43,16 @@ else: #the bag has already undergone renaming
         # srcdir = sys.argv[2]
         output = os.listdir(yml['output_dir'])
         i = 0
-        while not output[i].startswith(sys.argv[1]):
+        while not output[i].startswith(sys.argv[1]+'_'): #may need to change this
             i += 1
         srcdir = yml['output_dir'] + "/" + output[i]
 
-dirs = os.listdir(srcdir + "/data/" + sys.argv[1])
+dirs = os.listdir(srcdir + "/data/node_" + sys.argv[1])
 for file in dirs:
     if re.search('node_', file):
         final = file
         break
-json_file = open(srcdir + "/data/" + sys.argv[1] + '/' + final)
+json_file = open(srcdir + "/data/node_" + sys.argv[1] + '/' + final)
 contents = json_file.read()
 json_file.close()
 json = json.loads(contents)

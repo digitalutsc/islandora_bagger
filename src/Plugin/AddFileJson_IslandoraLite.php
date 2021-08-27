@@ -34,6 +34,7 @@ class AddFileJson_IslandoraLite extends AbstractIbPlugin {
     $client = new \GuzzleHttp\Client();
     //get all the media
     $json = json_decode((string) $node_json, TRUE);
+    $vid = $json['vid'][0]['value'];
     $jsons = [];
     $in_bag = [];
     $file_location = -1;
@@ -77,7 +78,7 @@ class AddFileJson_IslandoraLite extends AbstractIbPlugin {
         ]);
         $jsons[] = json_decode((string) $final_json->getBody(), TRUE);
         $fid = json_decode((string) $final_json->getBody(), TRUE)['fid'][0]['value'];
-        $p = $nid . DIRECTORY_SEPARATOR . $mid . DIRECTORY_SEPARATOR . $fid . "/file.json";
+        $p = 'node_' . $nid . '/media_'. $mid . DIRECTORY_SEPARATOR . 'file_' . $fid . "/file.json";
         if (!in_array($p, $in_bag)){
           $bag->createFile((string) $final_json->getBody(), $p);
           $in_bag[] = $p;
@@ -94,7 +95,7 @@ class AddFileJson_IslandoraLite extends AbstractIbPlugin {
 
       $jsons[] = json_decode((string) $thumbnail_json->getBody(), TRUE);
       $tn_fid = json_decode((string) $thumbnail_json->getBody(), TRUE)['fid'][0]['value'];
-      $p = $nid . DIRECTORY_SEPARATOR . $mid . DIRECTORY_SEPARATOR . $tn_fid . "/file.json";
+      $p = 'node_' . $nid . '/media_' . $mid . DIRECTORY_SEPARATOR . 'file_' . $tn_fid . "/file.json";
       if (!in_array($p, $in_bag)){
         $bag->createFile((string) $thumbnail_json->getBody(), $p);
         $in_bag[] = $p;

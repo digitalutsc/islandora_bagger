@@ -20,16 +20,16 @@ if yml['serialize'] == 'zip':
     os.mkdir(path)
     with zipfile.ZipFile(sys.argv[2], 'r') as zip_ref:
         zip_ref.extractall(path)
-    dirs = os.listdir(path + "/" + sys.argv[1] + "/data")
+    dirs = os.listdir(path + "/" + sys.argv[1] + "/data/node_" + sys.argv[1])
     path = yml['output_dir'] + '/rename_temps/' + sys.argv[1]
 else:
-    dirs = os.listdir(path + "/data/" + sys.argv[1])
+    dirs = os.listdir(path + "/data/node_" + sys.argv[1])
 
 for file in dirs:
     if re.search('node_', file):
         final = file
         break
-json_file = open(path + "/data/" + sys.argv[1] + '/' + final)
+json_file = open(path + "/data/node_" + sys.argv[1] + '/' + final)
 contents = json_file.read()
 json_file.close()
 json = json.loads(contents)
@@ -41,6 +41,9 @@ if os.path.isdir(parent + "/" + new_name):
     shutil.rmtree(parent + "/" + new_name)
 if not isinstance(yml['serialize'], bool):
     new_name = new_name + "." + str(yml['serialize'])
+x = open('/var/www/html/drupal/web/modules/contrib/islandora_bagger/new_name', 'w')
+x.write('fehfjkdahfjkd')
+x.close()
 os.rename(sys.argv[2], parent + "/" + new_name)
 if os.path.isdir(yml['output_dir'] + '/rename_temps'):
     shutil.rmtree(yml['output_dir'] + '/rename_temps')

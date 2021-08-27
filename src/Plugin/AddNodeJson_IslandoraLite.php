@@ -34,12 +34,13 @@ class AddNodeJson_IslandoraLite extends AbstractIbPlugin
    */
   public function execute(Bag $bag, $bag_temp_dir, $nid, $node_json)
   {
+    $arr = json_decode($node_json, TRUE);
+    $vid = $arr['vid'][0]['value'];
     if (!array_key_exists('taxonomy_info', $this->settings) || !count($this->settings['taxonomy_info'])){
-      $bag->createFile($node_json, 'node.json');
+      $bag->createFile($node_json, 'node_' . $nid . '/node.' . 'v' . $vid . '.json');
       return $bag;
     }
     $invalids = [];
-    $arr = json_decode($node_json, TRUE);
     $caller = debug_backtrace()[1]['function'];
     $this->retreivePages($bag, $bag_temp_dir, $nid, $node_json);
     $client = new \GuzzleHttp\Client();
@@ -113,7 +114,7 @@ class AddNodeJson_IslandoraLite extends AbstractIbPlugin
         }
       }
       bag_creation:
-      $bag->createFile(json_encode($arr, JSON_PRETTY_PRINT), $nid . '/node_' . $jsonld['@graph'][0]['dcterms:title'][$x]['@language'] . ".json");
+      $bag->createFile(json_encode($arr, JSON_PRETTY_PRINT), 'node_' . $nid . '/node_' . $jsonld['@graph'][0]['dcterms:title'][$x]['@language'] . '.v' . $vid . ".json");
     }
     return $bag;
   }

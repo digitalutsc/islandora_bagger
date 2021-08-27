@@ -34,13 +34,14 @@ class AddMediaJsonld_IslandoraLite extends AbstractIbPlugin
   {
     $this->retreivePages($bag, $bag_temp_dir, $nid, $node_json);
     $client = new \GuzzleHttp\Client();
-    $string = $this->settings['drupal_base_url'] . '/node/' . $nid;
+/*     $string = $this->settings['drupal_base_url'] . '/node/' . $nid;
     $x = $client->request('GET', $string, [
       'http_errors' => FALSE,
       'auth' => $this->settings['drupal_basic_auth'],
       'query' => ['_format' => 'json'],
-    ]);
-    $json = json_decode((string) $x->getBody(), TRUE);
+    ]); */
+    $json = json_decode($node_json, TRUE);
+    $vid = $json['vid'][0]['value'];
     $contents = "[";
     $result = [];
     for ($i = 0; $i < count($json['field_preservation_master_file']); $i++) {
@@ -58,7 +59,7 @@ class AddMediaJsonld_IslandoraLite extends AbstractIbPlugin
       $result = json_decode((string) $file_json->getBody(), TRUE);
       $arr = explode('media/', json_decode((string) $file_json->getBody(), TRUE)['@graph'][0]['@id']);
       $mid = explode("?_format=", end($arr))[0];
-      $bag->createFile((string)$file_json->getBody(), $nid . DIRECTORY_SEPARATOR . $mid . "/media.jsonld");
+      $bag->createFile((string)$file_json->getBody(), 'node_' . $nid . '/media_' . $mid . "/media.jsonld");
     }
     $contents = $contents . "]";
    // $bag->createFile($contents, 'media.jsonld');

@@ -12,7 +12,7 @@ bag_name: nid
 
 # Both temp_dir and output_dir are required.
 temp_dir: /tmp/islandora_bagger_temp
-output_dir: /var/www/html/drupal/web/modules/contrib/islandora_bagger
+output_dir: /var/www/html/drupal/web/sites/default/files # /var/www/html/drupal/web/modules/contrib/islandora_bagger
 
 # Required. Whether or not to zip up the Bag. This is the file extension to append as well as the archive type.
 # One of 'false', 'zip', 'tar, 'tar.gz' ('tgz' also supported) or 'tar.bz2'.
@@ -67,7 +67,7 @@ drupal_public_dir: "/var/www/html/drupal/web/sites/default/files/"
 
 # Required. Register plugins to populate bag-info.txt and the data directory.
 # Plugins are executed in the order they are listed here.
-plugins: ['AddMediaJson_IslandoraLite', 'AddFile_IslandoraLite','AddFileJson_IslandoraLite',
+plugins: ['AddRevisions', 'AddMediaJson_IslandoraLite', 'AddFile_IslandoraLite','AddFileJson_IslandoraLite',
           'AddFileJsonld_IslandoraLite', 'AddMediaJsonld_IslandoraLite', 
           'AddNodeJson_IslandoraLite', 'AddNodeJsonld_IslandoraLite']
 
@@ -117,4 +117,4 @@ media_types: ['image', 'document', 'audio_file', 'video_file', 'oembed_video']
 ####################
 # Post-Bag scripts #
 ####################
-post_bag_scripts: ["python3 src/PostBagScripts/rename.py", "python3 src/PostBagScripts/validate.py"]
+post_bag_scripts: # ["python3 src/PostBagScripts/rename.py", "python3 src/PostBagScripts/validate.py"]

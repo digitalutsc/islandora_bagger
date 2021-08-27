@@ -34,6 +34,7 @@ class AddFileJsonld_IslandoraLite extends AbstractIbPlugin {
     $client = new \GuzzleHttp\Client();
     //get all the media
     $json = json_decode((string) $node_json, TRUE);
+    $vid = $json['vid'][0]['value'];
     $jsons = [];
     $in_bag = [];
     $file_location = -1;
@@ -73,7 +74,7 @@ class AddFileJsonld_IslandoraLite extends AbstractIbPlugin {
         ]);
         $fid = $medias[$j]['target_id'];
         $jsons[] = json_decode((string) $final_json->getBody(), TRUE);
-        $path = $nid . DIRECTORY_SEPARATOR . $mid . DIRECTORY_SEPARATOR . $fid . "/file.jsonld";
+        $path = 'node_' . $nid . '/media_' . $mid . DIRECTORY_SEPARATOR . 'file_' .$fid . "/file.jsonld";
          if (!in_array($path, $in_bag)){
            $bag->createFile((string) $final_json->getBody(), $path);
            $in_bag[] = $path;
@@ -87,7 +88,7 @@ class AddFileJsonld_IslandoraLite extends AbstractIbPlugin {
         'query' => ['_format' => 'jsonld']
       ]);
       $fid = $media_json['thumbnail'][0]['target_id'];
-      $path = $nid . DIRECTORY_SEPARATOR . $mid . DIRECTORY_SEPARATOR . $fid . "/file.jsonld";
+      $path = 'node_' . $nid . '/media_' . $mid . DIRECTORY_SEPARATOR . 'file_' . $fid . "/file.jsonld";
       if (!in_array($path, $in_bag)){
         $bag->createFile((string) $thumbnail_json->getBody(), $path);
         $in_bag[] = $path;

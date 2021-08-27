@@ -38,6 +38,7 @@ class AddFile_IslandoraLite extends AbstractIbPlugin
 
     $media_client = new \GuzzleHttp\Client();
     $json = json_decode((string) $node_json, TRUE);
+    $vid = $json['vid'][0]['value'];
     $added_to_bag = [];
 
     //get media json
@@ -83,7 +84,7 @@ class AddFile_IslandoraLite extends AbstractIbPlugin
           $path = "/media/" . $foldername . DIRECTORY_SEPARATOR . "media_content/". $filename;
           $fid = $x['field_media_' . $media_types[$p]][$j]['target_id'];
           //$path = DIRECTORY_SEPARATOR . $x["mid"][0]["value"] . DIRECTORY_SEPARATOR . $fid . DIRECTORY_SEPARATOR .$filename;
-          $path = DIRECTORY_SEPARATOR . $nid . DIRECTORY_SEPARATOR . $x["mid"][0]["value"] . DIRECTORY_SEPARATOR . $fid . DIRECTORY_SEPARATOR .$filename;
+          $path = DIRECTORY_SEPARATOR . 'node_' . $nid . '/media_' . $x["mid"][0]["value"] . DIRECTORY_SEPARATOR . 'file_' . $fid . DIRECTORY_SEPARATOR .$filename;
           //!file_exists($temp_file_path) &&
           if (!in_array($path, $added_to_bag)){
             $bag->addFile($temp_file_path, $path);
@@ -96,7 +97,7 @@ class AddFile_IslandoraLite extends AbstractIbPlugin
         $video_url = $x['field_media_oembed_video'][0]['value'];
         $foldername = $x['name'][0]['value'];
         $path = "/media/" . $foldername . DIRECTORY_SEPARATOR . "media_content/video_url";
-        $path = DIRECTORY_SEPARATOR . $nid . DIRECTORY_SEPARATOR . $x["mid"][0]["value"] . DIRECTORY_SEPARATOR . DIRECTORY_SEPARATOR ."video_url";
+        $path = DIRECTORY_SEPARATOR . 'node_' . $nid . '/media_' . $x["mid"][0]["value"] . DIRECTORY_SEPARATOR ."video_url";
         if (!in_array($path, $added_to_bag)){
           $bag->createFile($video_url, $path);
           $added_to_bag[] = $path;
@@ -125,7 +126,7 @@ class AddFile_IslandoraLite extends AbstractIbPlugin
       // $path = "/media/" . $withoutExt . '(' . $ext . ')' . DIRECTORY_SEPARATOR . 'thumbnails/'. $tn_name;
       $path = "/media/" . $foldername . DIRECTORY_SEPARATOR . 'thumbnail/'. $tn_name;
 
-      $path = DIRECTORY_SEPARATOR . $nid . DIRECTORY_SEPARATOR . $x["mid"][0]["value"] . DIRECTORY_SEPARATOR . $x['thumbnail'][0]['target_id'] . DIRECTORY_SEPARATOR .$tn_name;
+      $path = DIRECTORY_SEPARATOR . 'node_' . $nid . '/media_' . $x["mid"][0]["value"] . DIRECTORY_SEPARATOR . 'file_' . $x['thumbnail'][0]['target_id'] . DIRECTORY_SEPARATOR .$tn_name;
 
       if (!in_array($path, $added_to_bag)){
         $bag->addFile($temp_file_path, $path);

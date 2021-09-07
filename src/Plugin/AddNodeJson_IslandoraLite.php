@@ -41,7 +41,6 @@ class AddNodeJson_IslandoraLite extends AbstractIbPlugin
       return $bag;
     }
     $invalids = [];
-    $caller = debug_backtrace()[1]['function'];
     $this->retreivePages($bag, $bag_temp_dir, $nid, $node_json);
     $client = new \GuzzleHttp\Client();
     //use the jsonld to get the translated languages

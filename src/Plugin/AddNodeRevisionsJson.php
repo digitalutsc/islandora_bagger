@@ -10,10 +10,10 @@ namespace App\Plugin;
 use whikloj\BagItTools\Bag;
 
 /**
- * Adds the JSON representation of the Islandora object's media to the Bag.
+ * Adds the JSON representation of the Islandora object's revisions to the Bag.
  */
-class AddMediaJsonld_IslandoraLite extends AbstractIbPlugin
-{
+class AddNodeRevisionsJson extends AbstractIbPlugin {
+
   /**
    * Constructor.
    *
@@ -22,49 +22,29 @@ class AddMediaJsonld_IslandoraLite extends AbstractIbPlugin
    * @param object $logger
    *    The Monolog logger from the main Command.
    */
-  public function __construct($settings, $logger)
-  {
+  public function __construct($settings, $logger) {
     parent::__construct($settings, $logger);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function execute(Bag $bag, $bag_temp_dir, $nid, $node_json)
-  {
+  public function execute(Bag $bag, $bag_temp_dir, $nid, $node_json) {
     $this->retreivePages($bag, $bag_temp_dir, $nid, $node_json);
+    $json = json_decode((string) $node_json, TRUE);
+    $curr_ver = $json['vid'][0]['value'];
     $client = new \GuzzleHttp\Client();
-/*     $string = $this->settings['drupal_base_url'] . '/node/' . $nid;
-    $x = $client->request('GET', $string, [
+    $url = $this->settings['drupal_base_url'] . '/node/' . $nid . '/revisions/rest';
+    $rev_json = $client->request('GET', $url, [
       'http_errors' => FALSE,
       'auth' => $this->settings['drupal_basic_auth'],
-      'query' => ['_format' => 'json'],
-    ]); */
-    $json = json_decode($node_json, TRUE);
-    $contents = "[";
-    $result = [];
-    for ($i = 0; $i < count($json['field_preservation_master_file']); $i++) {
-      $media_url = $this->settings['drupal_base_url'] . $json['field_preservation_master_file'][$i]['url'];
-      $mid = $json['field_preservation_master_file'][$i]['target_id'];
-      $file_json = $client->request('GET', $media_url, [
-        'http_errors' => FALSE,
-        'auth' => $this->settings['drupal_basic_auth'],
-        'query' => ['_format' => 'jsonld']
-      ]);
-      if ($i != 0) {
-        $contents = $contents . ", ";
-      }
-      $contents = $contents . (string) $file_json->getBody();
-      //$result[] = json_decode((string) $file_json->getBody(), TRUE);
-      $result = json_decode((string) $file_json->getBody(), TRUE);
-      $arr = explode('media/', json_decode((string) $file_json->getBody(), TRUE)['@graph'][0]['@id']);
-     # $mid = explode("?_format=", end($arr))[0];
-      $bag->createFile((string)$file_json->getBody(), 'node_' . $nid . '/media_' . $mid . "/media.jsonld");
+      'query' => ['_format' => 'json']
+    ]);
+    $rev_json = json_decode((string) $rev_json->getBody(), TRUE);
+    for ($i=0; $i < count($rev_json); $i++) { 
+      if($rev_json[$i]['vid'][0]['value'] != $curr_ver)//current revision alread done by AddNodeJson_IslandoraLite
+        $bag->createFile(json_encode($rev_json[$i], JSON_PRETTY_PRINT), 'node_' . $nid . '/node_' . $rev_json[$i]['langcode'][0]['value'] . '.v' . $rev_json[$i]['vid'][0]['value'] . ".json");
     }
-    $contents = $contents . "]";
-   // $bag->createFile($contents, 'media.jsonld');
-    //$bag->createFile(json_encode($result), 'media.jsonld');
-
     return $bag;
   }
   /**
@@ -99,4 +79,5 @@ class AddMediaJsonld_IslandoraLite extends AbstractIbPlugin
       $this->execute($bag, $bag_temp_dir, $children_result_arr[$i]['nid'], (string) $page_json->getBody());
     }
   }
+
 }

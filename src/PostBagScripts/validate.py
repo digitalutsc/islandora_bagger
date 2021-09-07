@@ -62,14 +62,23 @@ address = yml['bag-info']['Contact-Email']
 Namespace = yml['bag-info']['Namespace']
 nid = sys.argv[1]
 uuid = json['uuid'][0]['value']
-
-#need id, objdir, name, message, address
 id = nid + ':' + uuid + ':' + Namespace
-objdir = str(Path(srcdir).parent.absolute()) + '/OCFL_objects/' + nid + '_' + uuid + '_' + Namespace
+if yml['download_ocfl']:
+    objdir = yml['output_dir'] + '/' + id
+    if os.path.isfile(yml['output_dir'] + '/' + nid + '.zip'):
+        os.remove(yml['output_dir'] + '/' + nid + '.zip')
+else:
+    objdir = str(Path(srcdir).parent.absolute()) + '/OCFL_objects/' + nid + '_' + uuid + '_' + Namespace
+#need id, objdir, name, message, address
 
-os.system('python3 ocfl-py/ocfl-object.py --create --srcdir ' + srcdir + ' --id ' + id +
-              ' --objdir ' + objdir + ' --name ' + name + ' --message ' + message + ' --address ' + address)
-os.system('python3 ocfl-py/ocfl-validate.py --verbose ' + objdir)
+command = 'python3 ocfl-py/ocfl-object.py --create --srcdir ' + srcdir + ' --id ' + id + \
+    ' --objdir ' + objdir + ' --name ' + name + ' --message ' + message + ' --address ' + address
+os.system(command)
+os.system('python3 ocfl-py/ocfl-validate.py --verbose ' + objdir + '>' + yml['output_dir'] + '/validation_results_node_' + nid)
+if yml['download_ocfl']:
+    shutil.make_archive(yml['output_dir'] + '/' + nid, 'zip', objdir)
+    shutil.rmtree(yml['output_dir'] + '/' + id)
+
 #clean up temporary directories
 if os.path.isdir(yml['output_dir'] + '/validate_temps'):
     shutil.rmtree(yml['output_dir'] + '/validate_temps')

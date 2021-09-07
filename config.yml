@@ -11,6 +11,7 @@ drupal_basic_auth: ['admin', 'islandora']
 bag_name: nid
 
 # Both temp_dir and output_dir are required.
+# Omit any trailing backslashes
 temp_dir: /tmp/islandora_bagger_temp
 output_dir: /var/www/html/drupal/web/sites/default/files # /var/www/html/drupal/web/modules/contrib/islandora_bagger
 
@@ -31,6 +32,7 @@ bag-info:
   Namespace: dsu
   Message: "hey there"
 
+download_ocfl: true
 
 # Optional. Which hash algorithm to use.
 # One of 'md5', 'sha1', 'sha224', 'sha256', 'sha384', 'sha512', 'sha3224', 'sha3256', 'sha3384', 'sha3512'
@@ -59,7 +61,7 @@ log_bag_location: true
 
 # Required for Islandora Bagger Integration. The full Drupal public file system path.
 # Can be found under /admin/config/media/file-system
-drupal_public_dir: "/var/www/html/drupal/web/sites/default/files/"
+drupal_public_dir: "/var/www/html/drupal/web/sites/default/files"
 
 ############################
 # Plugin-specific settings #
@@ -67,9 +69,9 @@ drupal_public_dir: "/var/www/html/drupal/web/sites/default/files/"
 
 # Required. Register plugins to populate bag-info.txt and the data directory.
 # Plugins are executed in the order they are listed here.
-plugins: ['AddRevisions', 'AddMediaJson_IslandoraLite', 'AddFile_IslandoraLite','AddFileJson_IslandoraLite',
-          'AddFileJsonld_IslandoraLite', 'AddMediaJsonld_IslandoraLite', 
-          'AddNodeJson_IslandoraLite', 'AddNodeJsonld_IslandoraLite']
+plugins: ['AddMediaRevisionsJsonld', 'AddMediaRevisionsJson', 'AddNodeRevisionsJsonld', 'AddNodeRevisionsJson',
+          'AddMediaJson_IslandoraLite', 'AddFile_IslandoraLite','AddFileJson_IslandoraLite', 
+          'AddFileJsonld_IslandoraLite','AddNodeJson_IslandoraLite', 'AddNodeJsonld_IslandoraLite']
 
 # Used by the 'AddFedoraTurtle' plugin.
 fedora_base_url: 'http://localhost:8080/fcrepo/rest/'
@@ -117,4 +119,4 @@ media_types: ['image', 'document', 'audio_file', 'video_file', 'oembed_video']
 ####################
 # Post-Bag scripts #
 ####################
-post_bag_scripts: # ["python3 src/PostBagScripts/rename.py", "python3 src/PostBagScripts/validate.py"]
+post_bag_scripts: ["python3 src/PostBagScripts/rename.py", "python3 src/PostBagScripts/validate.py"]

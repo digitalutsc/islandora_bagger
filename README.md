@@ -10,12 +10,12 @@ not included here, please see the [Islandora Bagger Documentation](https://githu
 1. Clone the Islandora Lite Bagger branch of this repository, `git clone -b IslandoraLiteBagger https://github.com/digitalutsc/islandora_bagger.git`
 2. `cd islandora_bagger`
 3. `php composer.phar install` (or equivalent on your system, e.g., `./composer install`)
-4. `pip3 install bagit fs fs-s3fs Pairtree PyYAML` (to install Python packages required for Post Bag Scripts)
+4. `sudo pip3 install bagit fs fs-s3fs Pairtree PyYAML` (to install Python packages required for Post Bag Scripts)
 5. Clone the OCFL tool, `git clone https://github.com/zimeon/ocfl-py.git` (required for OCFL post bag scripts) 
 
 ## Usage
-As of now, the Islandora Lite Bagger only supports command line usage. To run the bagger
-on a single node with node ID `nid` and configuration file `config.yml`, use the command: 
+### Command Line
+To run the bagger on a single node with node ID `nid` and configuration file `config.yml`, use the command: 
 ```bash
 ./bin/console app:islandora_bagger:create_bag --settings=config.yml --node=nid
 ```
@@ -24,6 +24,14 @@ To run the bagger on multiple nodes, place the node IDs into a CSV file, `nodes.
 python3 supplementary/bagNodes.py nodes.csv
 ```
 For more information, see [here](https://github.com/mjordan/islandora_bagger#command-line-usage).
+
+### UI Usage (via Islandora Bagger Integration)
+To run the bagger using a button on the page, install the [Islandora Bagger Integration module](https://github.com/mjordan/islandora_bagger_integration) and in the configuration file, do the following:
+1. Set `serialize` to `zip`  
+2. Set `output_dir` to your Drupal public file system 
+3. Set `download_ocfl` to `true`
+4. Under `/admin/config/islandora_bagger_integration/settings`, select "Local", enter the full paths to the configuration file and your Islandora Lite installation, and save the configuration
+5. Click "Create Bag" in the Islandora Bagger Block on the node you want to bag and download the bag from the generated link. 
 
 ## Additional Plugins
 ### AddFile_IslandoraLite
@@ -105,6 +113,7 @@ To use, set `serialize` to `false` or `zip`
 - `Contact-Email`: (found under `bag-info`) specifies the user-address that will be placed in the `inventory.json`
 - `Message`: (found under `bag-info`) an optional message to be added to the `inventory.json`
 
+<!---
 ### uiIntegration
 #### Description
 Copies the contents of the output directory into the Drupal public file system to allow for support of the [Islandora 
@@ -115,6 +124,7 @@ and omit this script.
 #### Relevant configuration information 
 - `output_dir`: the original location of the bag
 - `drupal_public_dir`: the full path to the Drupal public file system, can be found under `/admin/config/media/file-system` 
+
 
 ## Islandora Bagger Integration
 The Islandora Lite Bagger allows for bagging nodes directly from their page via the 
@@ -128,7 +138,7 @@ To setup bagging directly from the Drupal user interface, follow these instructi
     3. Set `post_bag_scripts` to `["python3 src/PostBagScripts/uiIntegration.py"]`
 3. Under `/admin/config/islandora_bagger_integration/settings`, select "Local", enter the full paths to the configuration file and your Islandora Lite installation, and save the configuration
 4. Click "Create Bag" in the Islandora Bagger Block on the node you want to bag and download the bag from the generated link. 
-
+-->
 
 ## Bag Structure
 ```text

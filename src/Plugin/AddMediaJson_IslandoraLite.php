@@ -34,6 +34,7 @@ class AddMediaJson_IslandoraLite extends AbstractIbPlugin
   {
     $this->retreivePages($bag, $bag_temp_dir, $nid, $node_json);
     $client = new \GuzzleHttp\Client();
+    $added_names = [];
     //get the translations from the jsonld
     $json = json_decode((string) $node_json, TRUE);
     for ($i = 0; $i < count($json['field_preservation_master_file']); $i++) { //loop thru all media
@@ -65,7 +66,10 @@ class AddMediaJson_IslandoraLite extends AbstractIbPlugin
         $vid = json_decode((string) $file_json->getBody(), TRUE)['vid'][0]['value'];
         $filename = 'node_' . $nid . DIRECTORY_SEPARATOR . 'media_' . json_decode((string) $file_json->getBody(), TRUE)['mid'][0]['value']
           . "/media_" . $curr_lang . '.v' . $vid . ".json";
-        $bag->createFile((string) $file_json->getBody(), $filename);
+        if (!in_array($filename, $added_names)) {
+          $bag->createFile((string) $file_json->getBody(), $filename);
+          $added_names[] = $filename;
+        }
       }
     }
     return $bag;

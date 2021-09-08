@@ -50,7 +50,6 @@ class AddMediaRevisionsJsonld extends AbstractIbPlugin {
           'query' => ['_format' => 'jsonld']
       ]);
       $rev_jsonld = json_decode((string) $rev_jsonld->getBody(), TRUE);
-      
       for ($j=0; $j < count($rev_jsonld); $j++) {
         $lang_code = $rev_json[$j]['langcode'][0]['value'];
         $vid = $rev_json[$j]['vid'][0]['value'];

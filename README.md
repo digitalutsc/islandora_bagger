@@ -82,6 +82,19 @@ Media JSONs are stored in directories named after their MID.
 Adds the JSON-LD representation of each media entity referenced by the node to the bag.
 Media JSON-LDs are stored in directories named after their MID.
 
+### AddNodeRevisionsJson
+Adds the JSON representation of all revisions of the node to the bag.
+
+### AddNodeRevisionsJsonld
+Adds the JSON-LD representation of all revisions of the node to the bag.
+
+### AddMediaRevisionsJson
+Adds the JSON representation of all revisions of the node's media to the bag.
+
+### AddMediaRevisionsJsonld
+Adds the JSON-LD representation of all revisions of the node's media to the bag.
+
+
 ## Translation Support
 This modified utility supports the serialization of all translations of an Islandora Repository item and its 
 media. Support is offered for all [language codes registered by the Library of Congress](https://www.loc.gov/standards/iso639-2/php/code_list.php).
@@ -103,7 +116,7 @@ To use, set `serialize` to `false` or `zip`
 Creates an [OCFL object](https://ocfl.io/1.0/spec/) from the bag and validates it. 
 The OCFL object will be created in the `islandora_bagger` directory according to the 
 same naming convention as the bag (`{nid}_{uuid}_{namespace}`). If you will be using both the `rename`
-and `validate` scripts, you ***must*** place the `rename` script ***after*** the `validate` script.
+The result of the validation script can be found in the output directory under the name `validation_results_node_{nid}`.
 This script uses the [oclf-py tool](https://github.com/zimeon/ocfl-py).
 To use, set `serialize` to `false` or `zip`
 
@@ -146,29 +159,26 @@ To setup bagging directly from the Drupal user interface, follow these instructi
 ├── bag-info.txt
 ├── bagit.txt
 ├── data
-│   ├──112
-│   │   ├── 18
-│   │   │    ├── 32
-│   │   │    ├── 64
+│   ├──node_112
+│   │   ├──media_18
+│   │   │    ├──file_32
+│   │   │    ├──file_64
 │   │   │    │    ├── file.txt
 │   │   │    │    ├── thumbnail.jpeg
 │   │   │    │    ├── file_en.json
 │   │   │    │    └── file.jsonld
-│   │   │    ├── media_en.json
-│   │   │    ├── media_en.json
-│   │   │    └── media.jsonld
-│   │   ├── 20
-│   │   ├── node_en.json
-│   │   ├── node_fr.json
-│   │   └── node.jsonld
-│   └──113
+│   │   │    ├── media_en.v1.json
+│   │   │    ├── media_en.v2.json
+│   │   │    ├── media.v1.jsonld
+│   │   │    └── media.v2.jsonld
+│   │   ├──media_20
+│   │   ├── node_en.v1.json
+│   │   ├── node_en.v2.json
+│   │   ├── node_fr.v1.json
+│   │   ├── node_fr.v2.json
+│   │   ├── node.v1.jsonld
+│   │   └── node.v2.jsonld
+│   └──node_113
 ├── manifest-sha1.txt
 └── tagmanifest-sha1.txt
 ```
-where,
-- `112`: the NID of the node being bagged
-- `2fa72847-287e-462e-adb8-410bb0ad1dea`: the UUID of the node being bagged
-- `113`: the NID of a page belonging node 112, when expanded, will follow the same strucutre as that of `112` 
-- `dsu`: the namespace of the node being bagged  
-- `18` & `20`: the MID of the media entities referenced by the node
-- `32` & `64`: the FID of the files belonging to media entity `18`

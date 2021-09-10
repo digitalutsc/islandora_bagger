@@ -53,7 +53,7 @@ class AddMediaJson_IslandoraLite extends AbstractIbPlugin
         $langs[] = ''; // if all else fails, do not add language indicator
         for ($j = 0; $j < count($langs); $j++){ //create the json for each language
         $curr_lang = gettype($langs[$j]['langcode']) != 'string' ?
-          $langs[$j]['@language'] : $this->getLocaleCodeForDisplayLanguage($langs[$j]['langcode']);
+          $langs[$j]['@language'] : $this->getLocaleCodeForDisplayLanguage(explode('/', $langs[$j]['langcode'])[0]);
         $translation = $this->settings['drupal_base_url'] . DIRECTORY_SEPARATOR
           . $curr_lang .
            $json['field_preservation_master_file'][$i]['url']; //generate the url with the language code
@@ -263,7 +263,10 @@ class AddMediaJson_IslandoraLite extends AbstractIbPlugin
       'Chinese' => 'zh',
       'Zulu' => 'zu'
     );
-    return $languageCodes[$name];
+    if (array_key_exists($name, $languageCodes)) {
+      return $languageCodes[$name];
+    }
+    return '';
 }
 
   /**

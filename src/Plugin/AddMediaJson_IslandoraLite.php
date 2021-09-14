@@ -54,6 +54,9 @@ class AddMediaJson_IslandoraLite extends AbstractIbPlugin
         for ($j = 0; $j < count($langs); $j++){ //create the json for each language
         $curr_lang = gettype($langs[$j]['langcode']) != 'string' ?
           $langs[$j]['@language'] : $this->getLocaleCodeForDisplayLanguage(explode('/', $langs[$j]['langcode'])[0]);
+        if ($curr_lang == '') {
+          continue;
+        }
         $translation = $this->settings['drupal_base_url'] . DIRECTORY_SEPARATOR
           . $curr_lang .
            $json['field_preservation_master_file'][$i]['url']; //generate the url with the language code

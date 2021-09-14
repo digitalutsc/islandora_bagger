@@ -13,6 +13,10 @@ from pathlib import Path
 with open(sys.argv[3]) as f:
     yml = yaml.safe_load(f)
 
+#clean up directories from failed exits
+if os.path.isdir(yml['output_dir'] + '/validate_temps'):
+    shutil.rmtree(yml['output_dir'] + '/validate_temps')
+
 if os.path.isdir(sys.argv[2]) or os.path.isfile(sys.argv[2]): #no renaming has occured
     # check for archived file
     if not isinstance(yml['serialize'], bool):

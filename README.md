@@ -12,6 +12,7 @@ not included here, please see the [Islandora Bagger Documentation](https://githu
 3. `php composer.phar install` (or equivalent on your system, e.g., `./composer install`)
 4. `sudo pip3 install bagit fs fs-s3fs Pairtree PyYAML` (to install Python packages required for Post Bag Scripts)
 5. Clone the OCFL tool, `git clone https://github.com/zimeon/ocfl-py.git` (required for OCFL post bag scripts) 
+6. Import the supplementary views in `supplementary/views.tar.gz` (can be done at `/admin/config/development/configuration/full/import`)
 
 ## Usage
 ### Command Line
@@ -96,11 +97,7 @@ Adds the JSON-LD representation of all revisions of the node's media to the bag.
 
 
 ## Translation Support
-This modified utility supports the serialization of all translations of an Islandora Repository item and its 
-media. Support is offered for all [language codes registered by the Library of Congress](https://www.loc.gov/standards/iso639-2/php/code_list.php).
-If you wish to add support for another language not already registered by the Library of Congress, do so by adding 
-the two-letter language code to `supplementary/langcodes` (do `echo [code]>>supplementary/langcodes`, where `[code]` is the 
-two letter language code)
+This modified utility supports the serialization of all translations of an Islandora Repository item and its media. See [Bag Structure](#bag-structure) for more information on how translations are organized. 
 
 ## Post Bag Scripts
 Three post bag scripts are included but you may add more following the instructions [here](https://github.com/mjordan/islandora_bagger#post-bag-scripts).

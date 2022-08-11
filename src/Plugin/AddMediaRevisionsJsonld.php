@@ -34,26 +34,28 @@ class AddMediaRevisionsJsonld extends AbstractIbPlugin {
   public function execute(Bag $bag, $bag_temp_dir, $nid, $node_json) {
     $this->retreivePages($bag, $bag_temp_dir, $nid, $node_json);
     $json = json_decode((string) $node_json, TRUE);
-    for ($i=0; $i < count($json['field_preservation_master_file']); $i++) { 
-      $mid = $json['field_preservation_master_file'][$i]['target_id'];
-      $url = $this->settings['drupal_base_url'] . $json['field_preservation_master_file'][$i]['url'] . '/revisions/rest';
-      $client = new \GuzzleHttp\Client();
-      $rev_json = $client->request('GET', $url, [
-        'http_errors' => FALSE,
-        'auth' => $this->settings['drupal_basic_auth'],
-        'query' => ['_format' => 'json']
-      ]);
-      $rev_json = json_decode((string) $rev_json->getBody(), TRUE);
-      $rev_jsonld = $client->request('GET', $url, [
+    foreach ($this->settings['media_fields'] as $media_field) {
+      for ($i=0; $i < count($json[$media_field]); $i++) { 
+        $mid = $json[$media_field][$i]['target_id'];
+        $url = $this->settings['drupal_base_url'] . $json[$media_field][$i]['url'] . '/revisions/rest';
+        $client = new \GuzzleHttp\Client();
+        $rev_json = $client->request('GET', $url, [
           'http_errors' => FALSE,
           'auth' => $this->settings['drupal_basic_auth'],
-          'query' => ['_format' => 'jsonld']
-      ]);
-      $rev_jsonld = json_decode((string) $rev_jsonld->getBody(), TRUE);
-      for ($j=0; $j < count($rev_jsonld); $j++) {
-        $lang_code = $rev_json[$j]['langcode'][0]['value'];
-        $vid = $rev_json[$j]['vid'][0]['value'];
-        $bag->createFile(json_encode($rev_jsonld[$j],JSON_PRETTY_PRINT), 'node_' . $nid . '/media_' . $mid . '/media_' . $lang_code . '.v' . $vid . '.jsonld');
+          'query' => ['_format' => 'json']
+        ]);
+        $rev_json = json_decode((string) $rev_json->getBody(), TRUE);
+        $rev_jsonld = $client->request('GET', $url, [
+            'http_errors' => FALSE,
+            'auth' => $this->settings['drupal_basic_auth'],
+            'query' => ['_format' => 'jsonld']
+        ]);
+        $rev_jsonld = json_decode((string) $rev_jsonld->getBody(), TRUE);
+        for ($j=0; $j < count($rev_jsonld); $j++) {
+          $lang_code = $rev_json[$j]['langcode'][0]['value'];
+          $vid = $rev_json[$j]['vid'][0]['value'];
+          $bag->createFile(json_encode($rev_jsonld[$j],JSON_PRETTY_PRINT), 'node_' . $nid . '/media_' . $mid . '/media_' . $lang_code . '.v' . $vid . '.jsonld');
+        }
       }
     }
     return $bag;

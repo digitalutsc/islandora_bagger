@@ -39,62 +39,63 @@ class AddFileJsonld_IslandoraLite extends AbstractIbPlugin {
     $in_bag = [];
     $file_location = -1;
 
-    for ($i = 0; $i < count($json['field_preservation_master_file']); $i++) {
-      $media_url = $this->settings['drupal_base_url'] . $json['field_preservation_master_file'][$i]['url'];
-      //get json of each media
-      $media_json = $client->request('GET', $media_url, [
-        'http_errors' => FALSE,
-        'auth' => $this->settings['drupal_basic_auth'],
-        'query' => ['_format' => 'json'],
-      ]);
-      $media_json = json_decode((string) $media_json->getBody(), TRUE);
-      $mid = $media_json['mid'][0]['value'];
-      $p = 0;
-      #$media_types = ['image', 'document', 'audio_file', 'video_file', 'oembed_video'];
-      $media_types = $this->settings['media_types'];
-      while($p < count($media_types) && !property_exists((object)$media_json, 'field_media_' . $media_types[$p])){
-        $p++;
-      }
-      $medias = $media_json['field_media_' .$media_types[$p]];
-      for ($j = 0; $j < count($medias); $j++) { //get json of each file
-        if ($file_location == -1){
-          $file_headers = @get_headers(str_replace("\n", "", $this->settings['drupal_base_url'] . "/entity/file/" . $medias[$j]['target_id']));
-          if(!str_ends_with($file_headers[0], '404 Not Found'))
-            $file_location = "/entity/file/";
-          else
-            $file_location = '/file/';
-        }
-        $file_client = new \GuzzleHttp\Client();
-        if (!property_exists((object)$medias[$j], 'target_id')) continue; //remote media, skip
-        $file_client = new \GuzzleHttp\Client();
-        $final_json = $file_client->request('GET', $this->settings['drupal_base_url'] . $file_location . $medias[$j]['target_id'], [//$this->settings['drupal_base_url'] . "/rest/" . end($file_name), [
+    foreach ($this->settings['media_fields'] as $media_field) {
+      for ($i = 0; $i < count($json[$media_field]); $i++) {
+        $media_url = $this->settings['drupal_base_url'] . $json[$media_field][$i]['url'];
+        //get json of each media
+        $media_json = $client->request('GET', $media_url, [
           'http_errors' => FALSE,
           'auth' => $this->settings['drupal_basic_auth'],
-          'query' => ['_format' => 'jsonld'],
+          'query' => ['_format' => 'json'],
         ]);
-        $fid = $medias[$j]['target_id'];
-        $jsons[] = json_decode((string) $final_json->getBody(), TRUE);
-        $path = 'node_' . $nid . '/media_' . $mid . DIRECTORY_SEPARATOR . 'file_' .$fid . "/file.jsonld";
-         if (!in_array($path, $in_bag)){
-           $bag->createFile((string) $final_json->getBody(), $path);
-           $in_bag[] = $path;
-         }
+        $media_json = json_decode((string) $media_json->getBody(), TRUE);
+        $mid = $media_json['mid'][0]['value'];
+        $p = 0;
+        #$media_types = ['image', 'document', 'audio_file', 'video_file', 'oembed_video'];
+        $media_types = $this->settings['media_types'];
+        while($p < count($media_types) && !property_exists((object)$media_json, 'field_media_' . $media_types[$p])){
+          $p++;
+        }
+        $medias = $media_json['field_media_' .$media_types[$p]];
+        for ($j = 0; $j < count($medias); $j++) { //get json of each file
+          if ($file_location == -1){
+            $file_headers = @get_headers(str_replace("\n", "", $this->settings['drupal_base_url'] . "/entity/file/" . $medias[$j]['target_id']));
+            if(!str_ends_with($file_headers[0], '404 Not Found'))
+              $file_location = "/entity/file/";
+            else
+              $file_location = '/file/';
+          }
+          $file_client = new \GuzzleHttp\Client();
+          if (!property_exists((object)$medias[$j], 'target_id')) continue; //remote media, skip
+          $file_client = new \GuzzleHttp\Client();
+          $final_json = $file_client->request('GET', $this->settings['drupal_base_url'] . $file_location . $medias[$j]['target_id'], [//$this->settings['drupal_base_url'] . "/rest/" . end($file_name), [
+            'http_errors' => FALSE,
+            'auth' => $this->settings['drupal_basic_auth'],
+            'query' => ['_format' => 'jsonld'],
+          ]);
+          $fid = $medias[$j]['target_id'];
+          $jsons[] = json_decode((string) $final_json->getBody(), TRUE);
+          $path = 'node_' . $nid . '/media_' . $mid . DIRECTORY_SEPARATOR . 'file_' .$fid . "/file.jsonld";
+          if (!in_array($path, $in_bag)){
+            $bag->createFile((string) $final_json->getBody(), $path);
+            $in_bag[] = $path;
+          }
+        }
+        //get json for thumbnail
+        $tn_client = new \GuzzleHttp\Client();
+        $thumbnail_json = $tn_client->request("GET", $this->settings['drupal_base_url'] . $file_location . $media_json['thumbnail'][0]['target_id'], [//$this->settings['drupal_base_url'] . "/rest/" . end($arr), [
+          'http_errors' => FALSE,
+          //'auth' => $this->settings['drupal_basic_auth'],
+          'query' => ['_format' => 'jsonld']
+        ]);
+        $fid = $media_json['thumbnail'][0]['target_id'];
+        $path = 'node_' . $nid . '/media_' . $mid . DIRECTORY_SEPARATOR . 'file_' . $fid . "/file.jsonld";
+        if (!in_array($path, $in_bag)){
+          $bag->createFile((string) $thumbnail_json->getBody(), $path);
+          $in_bag[] = $path;
+        }
+        $jsons[] = json_decode((string) $thumbnail_json->getBody(), TRUE);
       }
-      //get json for thumbnail
-      $tn_client = new \GuzzleHttp\Client();
-      $thumbnail_json = $tn_client->request("GET", $this->settings['drupal_base_url'] . $file_location . $media_json['thumbnail'][0]['target_id'], [//$this->settings['drupal_base_url'] . "/rest/" . end($arr), [
-        'http_errors' => FALSE,
-        //'auth' => $this->settings['drupal_basic_auth'],
-        'query' => ['_format' => 'jsonld']
-      ]);
-      $fid = $media_json['thumbnail'][0]['target_id'];
-      $path = 'node_' . $nid . '/media_' . $mid . DIRECTORY_SEPARATOR . 'file_' . $fid . "/file.jsonld";
-      if (!in_array($path, $in_bag)){
-        $bag->createFile((string) $thumbnail_json->getBody(), $path);
-        $in_bag[] = $path;
-      }
-      $jsons[] = json_decode((string) $thumbnail_json->getBody(), TRUE);
-
     }
   //  $ghj = json_encode($jsons);
   //  $bag->createFile($ghj, 'file.jsonld');

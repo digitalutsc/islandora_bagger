@@ -35,32 +35,34 @@ class AddMediaRevisionsJson extends AbstractIbPlugin {
     $this->retreivePages($bag, $bag_temp_dir, $nid, $node_json);
     $json = json_decode((string) $node_json, TRUE);
 
-    for ($i=0; $i < count($json['field_preservation_master_file']); $i++) { 
+    foreach ($this->settings['media_fields'] as $media_field) {
+      for ($i=0; $i < count($json[$media_field]); $i++) { 
 
-      $url = $this->settings['drupal_base_url'] . $json['field_preservation_master_file'][$i]['url'];
-      $client = new \GuzzleHttp\Client();
-      $media_json = $client->request('GET', $url, [
-        'http_errors' => FALSE,
-        'auth' => $this->settings['drupal_basic_auth'],
-        'query' => ['_format' => 'json']
-      ]);
-      $media_json = json_decode((string) $media_json->getBody(), TRUE);
-      $original_vid = $media_json['vid'][0]['value'];
+        $url = $this->settings['drupal_base_url'] . $json[$media_field][$i]['url'];
+        $client = new \GuzzleHttp\Client();
+        $media_json = $client->request('GET', $url, [
+          'http_errors' => FALSE,
+          'auth' => $this->settings['drupal_basic_auth'],
+          'query' => ['_format' => 'json']
+        ]);
+        $media_json = json_decode((string) $media_json->getBody(), TRUE);
+        $original_vid = $media_json['vid'][0]['value'];
 
-      $mid = $json['field_preservation_master_file'][$i]['target_id'];
-      $url = $this->settings['drupal_base_url'] . $json['field_preservation_master_file'][$i]['url'] . '/revisions/rest';
-      $client = new \GuzzleHttp\Client();
-      $rev_json = $client->request('GET', $url, [
-        'http_errors' => FALSE,
-        'auth' => $this->settings['drupal_basic_auth'],
-        'query' => ['_format' => 'json']
-      ]);
-      $rev_json = json_decode((string) $rev_json->getBody(), TRUE);
-      for ($j=0; $j < count($rev_json); $j++) {
-        $lang_code = $rev_json[$j]['langcode'][0]['value'];
-        $vid = $rev_json[$j]['vid'][0]['value'];
-        if($vid != $original_vid) #the current revision is handled by another plugin
-          $bag->createFile(json_encode($rev_json[$j],JSON_PRETTY_PRINT), 'node_' . $nid . '/media_' . $mid . '/media_' . $lang_code . '.v' . $vid . '.json');
+        $mid = $json[$media_field][$i]['target_id'];
+        $url = $this->settings['drupal_base_url'] . $json[$media_field][$i]['url'] . '/revisions/rest';
+        $client = new \GuzzleHttp\Client();
+        $rev_json = $client->request('GET', $url, [
+          'http_errors' => FALSE,
+          'auth' => $this->settings['drupal_basic_auth'],
+          'query' => ['_format' => 'json']
+        ]);
+        $rev_json = json_decode((string) $rev_json->getBody(), TRUE);
+        for ($j=0; $j < count($rev_json); $j++) {
+          $lang_code = $rev_json[$j]['langcode'][0]['value'];
+          $vid = $rev_json[$j]['vid'][0]['value'];
+          if($vid != $original_vid) #the current revision is handled by another plugin
+            $bag->createFile(json_encode($rev_json[$j],JSON_PRETTY_PRINT), 'node_' . $nid . '/media_' . $mid . '/media_' . $lang_code . '.v' . $vid . '.json');
+        }
       }
     }
     return $bag;

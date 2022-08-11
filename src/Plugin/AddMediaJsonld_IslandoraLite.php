@@ -43,23 +43,25 @@ class AddMediaJsonld_IslandoraLite extends AbstractIbPlugin
     $json = json_decode($node_json, TRUE);
     $contents = "[";
     $result = [];
-    for ($i = 0; $i < count($json['field_preservation_master_file']); $i++) {
-      $media_url = $this->settings['drupal_base_url'] . $json['field_preservation_master_file'][$i]['url'];
-      $mid = $json['field_preservation_master_file'][$i]['target_id'];
-      $file_json = $client->request('GET', $media_url, [
-        'http_errors' => FALSE,
-        'auth' => $this->settings['drupal_basic_auth'],
-        'query' => ['_format' => 'jsonld']
-      ]);
-      if ($i != 0) {
-        $contents = $contents . ", ";
+    foreach ($this->settings['media_fields'] as $media_field) {
+      for ($i = 0; $i < count($json[$media_field]); $i++) {
+        $media_url = $this->settings['drupal_base_url'] . $json[$media_field][$i]['url'];
+        $mid = $json[$media_field][$i]['target_id'];
+        $file_json = $client->request('GET', $media_url, [
+          'http_errors' => FALSE,
+          'auth' => $this->settings['drupal_basic_auth'],
+          'query' => ['_format' => 'jsonld']
+        ]);
+        if ($i != 0) {
+          $contents = $contents . ", ";
+        }
+        $contents = $contents . (string) $file_json->getBody();
+        //$result[] = json_decode((string) $file_json->getBody(), TRUE);
+        $result = json_decode((string) $file_json->getBody(), TRUE);
+        $arr = explode('media/', json_decode((string) $file_json->getBody(), TRUE)['@graph'][0]['@id']);
+      # $mid = explode("?_format=", end($arr))[0];
+        $bag->createFile((string)$file_json->getBody(), 'node_' . $nid . '/media_' . $mid . "/media.jsonld");
       }
-      $contents = $contents . (string) $file_json->getBody();
-      //$result[] = json_decode((string) $file_json->getBody(), TRUE);
-      $result = json_decode((string) $file_json->getBody(), TRUE);
-      $arr = explode('media/', json_decode((string) $file_json->getBody(), TRUE)['@graph'][0]['@id']);
-     # $mid = explode("?_format=", end($arr))[0];
-      $bag->createFile((string)$file_json->getBody(), 'node_' . $nid . '/media_' . $mid . "/media.jsonld");
     }
     $contents = $contents . "]";
    // $bag->createFile($contents, 'media.jsonld');

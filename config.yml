@@ -116,6 +116,9 @@ include_media_use_list: true
 # you would just add 'foo' to the array
 media_types: ['image', 'document', 'audio_file', 'video_file', 'oembed_video']
 
+# Required. Media fields that will be processed by plugins.
+media_fields: ['field_islandora_object_media']
+
 ####################
 # Post-Bag scripts #
 ####################

@@ -29,7 +29,7 @@ class AddNodeRevisionsJson extends AbstractIbPlugin {
   /**
    * {@inheritdoc}
    */
-  public function execute(Bag $bag, $bag_temp_dir, $nid, $node_json) {
+  public function execute(Bag $bag, $bag_temp_dir, $nid, $node_json, $token = NULL) {
     $this->retreivePages($bag, $bag_temp_dir, $nid, $node_json);
     $json = json_decode((string) $node_json, TRUE);
     $curr_ver = $json['vid'][0]['value'];

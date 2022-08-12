@@ -30,7 +30,7 @@ class AddMediaJson_IslandoraLite extends AbstractIbPlugin
   /**
    * {@inheritdoc}
    */
-  public function execute(Bag $bag, $bag_temp_dir, $nid, $node_json)
+  public function execute(Bag $bag, $bag_temp_dir, $nid, $node_json, $token = NULL)
   {
     $this->retreivePages($bag, $bag_temp_dir, $nid, $node_json);
     $client = new \GuzzleHttp\Client();

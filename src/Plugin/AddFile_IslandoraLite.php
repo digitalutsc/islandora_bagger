@@ -32,7 +32,7 @@ class AddFile_IslandoraLite extends AbstractIbPlugin
    *
    * Adds a node's media to the Bag.
    */
-  public function execute(Bag $bag, $bag_temp_dir, $nid, $node_json)
+  public function execute(Bag $bag, $bag_temp_dir, $nid, $node_json, $token = NULL)
   {
     $this->retreivePages($bag, $bag_temp_dir, $nid, $node_json);
 

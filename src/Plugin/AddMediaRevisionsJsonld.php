@@ -31,7 +31,7 @@ class AddMediaRevisionsJsonld extends AbstractIbPlugin {
   /**
    * {@inheritdoc}
    */
-  public function execute(Bag $bag, $bag_temp_dir, $nid, $node_json) {
+  public function execute(Bag $bag, $bag_temp_dir, $nid, $node_json, $token = NULL) {
     $this->retreivePages($bag, $bag_temp_dir, $nid, $node_json);
     $json = json_decode((string) $node_json, TRUE);
     foreach ($this->settings['media_fields'] as $media_field) {

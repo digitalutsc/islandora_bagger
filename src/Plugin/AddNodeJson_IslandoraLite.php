@@ -32,7 +32,7 @@ class AddNodeJson_IslandoraLite extends AbstractIbPlugin
    *
    * Adds Drupal's JSON representation of the Islandora object to the Bag.
    */
-  public function execute(Bag $bag, $bag_temp_dir, $nid, $node_json)
+  public function execute(Bag $bag, $bag_temp_dir, $nid, $node_json, $token = NULL)
   {
     $arr = json_decode($node_json, TRUE);
     $vid = $arr['vid'][0]['value'];

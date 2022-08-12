@@ -3,6 +3,7 @@
 namespace App\Service;
 
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\RequestException;
 use whikloj\BagItTools\Bag;
 
 
@@ -33,36 +34,24 @@ class IslandoraBagger
      * @throws \whikloj\BagItTools\BagItException
      *   Problems creating the bag, adding files or writing to disk.
      */
-    public function createBag($nid, $settings_path)
+    public function createBag($nid, $settings_path, $token)
     {
-        // Set some configuration defaults.
-        $this->settings['http_timeout'] = (!isset($this->settings['http_timeout'])) ?
-            60 : $this->settings['http_timeout'];
-        $this->settings['verify_ca'] = (!isset($this->settings['verify_ca'])) ?
-            true : $this->settings['verify_ca'];
-        $this->settings['hash_algorithm'] = (!isset($this->settings['hash_algorithm'])) ?
-            'sha1' : $this->settings['hash_algorithm'];
-        $this->settings['include_payload_oxum'] = (!isset($this->settings['include_payload_oxum'])) ?
-            true : $this->settings['include_payload_oxum'];
-        $this->settings['delete_settings_file'] = (!isset($this->settings['delete_settings_file'])) ?
-            false : $this->settings['delete_settings_file'];
-        $this->settings['log_bag_location'] = (!isset($this->settings['log_bag_location'])) ?
-            false : $this->settings['log_bag_location'];
-        $this->settings['register_bags_with_islandora'] = (!isset($this->settings['register_bags_with_islandora'])) ?
-            false : $this->settings['register_bags_with_islandora'];
+      $this->setDefaults();
 
-        if (!file_exists($this->settings['output_dir'])) {
-            mkdir($this->settings['output_dir']);
-        }
-        if (!file_exists($this->settings['temp_dir'])) {
-            mkdir($this->settings['temp_dir']);
-        }
+      // If no token is provided on the command-line, login using credentials in settings.
+      if (empty($token)) {
+        $token = $this->retrieveJwtToken();
+      }
 
-        $client = new Client();
+      if (empty($token)) {
+        $this->logger->info("JWT token not supplied or received on login. This is OK unless needing access to unpublished content");
+      }
+
+      $client = new Client();
 
         // Get the node's UUID from Drupal.
         $drupal_url = $this->settings['drupal_base_url'] . '/node/' . $nid . '?_format=json';
-        $response = $client->get($drupal_url);
+	      $response = $client->get($drupal_url, ['headers' => ['Authorization' => 'Bearer ' . $token]]);
         $response_body = (string) $response->getBody();
         $node_json = $response_body;
         $body_array = json_decode($response_body, true);
@@ -72,6 +61,10 @@ class IslandoraBagger
             $bag_name = $uuid;
         } else {
             $bag_name = $nid;
+        }
+
+        if (array_key_exists('bag_name_template', $this->settings)) {
+            $bag_name = preg_replace('/%/', $bag_name, $this->settings['bag_name_template']);
         }
 
         // Ensure bag directories don't exist. They are created by the Bag library.
@@ -89,7 +82,20 @@ class IslandoraBagger
         // Create the Bag.
         $bag = Bag::create($bag_dir);
         $bag->setExtended(true);
-        $bag->setAlgorithm($this->settings['hash_algorithm']);
+        if (is_string($this->settings['hash_algorithm'])) {
+            $bag->setAlgorithm($this->settings['hash_algorithm']);
+        }
+        if (is_array($this->settings['hash_algorithm'])) {
+            if (count($this->settings['hash_algorithm']) == 1) {
+                $bag->setAlgorithm($this->settings['hash_algorithm'][0]);
+            } else {
+                $first_algo = array_shift($this->settings['hash_algorithm']);
+                $bag->setAlgorithm($first_algo);
+                foreach ($this->settings['hash_algorithm'] as $secondary_algo) {
+                    $bag->addAlgorithm($secondary_algo);
+                }
+            }
+        }
 
         // Add tags registered in the config file.
         foreach ($this->settings['bag-info'] as $key => $value) {
@@ -100,7 +106,7 @@ class IslandoraBagger
         foreach ($this->settings['plugins'] as $plugin) {
             $plugin_name = 'App\Plugin\\' . $plugin;
             $bag_plugin = new $plugin_name($this->settings, $this->logger);
-            $bag = $bag_plugin->execute($bag, $bag_temp_dir, $nid, $node_json);
+            $bag = $bag_plugin->execute($bag, $bag_temp_dir, $nid, $node_json, $token);
         }
 
         $bag->update();
@@ -113,7 +119,7 @@ class IslandoraBagger
                 @unlink($bag_file_path);
             }
             $bag->finalize();
-            $this->registerBagWithIslandora($nid, $bag_name, $bag);
+            $this->registerBagWithIslandora($nid, $bag_name, $bag, $token);
             $bag->package($bag_file_path);
             $this->removeDir($bag_dir);
             if ($this->settings['log_bag_location']) {
@@ -121,7 +127,7 @@ class IslandoraBagger
             }
         } else {
           $bag->finalize();
-          $this->registerBagWithIslandora($nid, $bag_name, $bag);
+          $this->registerBagWithIslandora($nid, $bag_name, $bag, $token);
         }
 
         if ($this->settings['log_bag_creation']) {
@@ -222,8 +228,10 @@ class IslandoraBagger
      *   The Bag name.
      * @param object $bag
      *  The Bag object.
+     * @param string $token
+     *  JWT authorization token.
      */
-    protected function registerBagWithIslandora($nid, $bag_name, $bag)
+    protected function registerBagWithIslandora($nid, $bag_name, $bag, $token = NULL)
     {
         if (!$this->settings['register_bags_with_islandora']) {
           return;
@@ -254,7 +262,9 @@ class IslandoraBagger
 
         $client = new Client(['http_errors' => false]);
         $drupal_url = $this->settings['drupal_base_url'] . '/islandora_bagger_integration/bag_log';
-        $response = $client->post($drupal_url, ['auth' => [$username, $password], 'headers' => ['Content-Type' => 'application/json'], 'body' => $post_data]);
+        $response = $client->post($drupal_url,
+          ['headers' => ['Content-Type' => 'application/json',
+          'Authorization' => 'Bearer ' . $token], 'body' => $post_data]);
         $response_body = (string) $response->getBody();
         $response_body = json_decode($response_body, TRUE);
 
@@ -266,4 +276,83 @@ class IslandoraBagger
             )
         );*/
     }
+
+  /**
+   * Makes a login POST request to the Drupal site and retrieves
+   * a JWT token. The site must be running the Get JWT on Login module.
+   * @return mixed|null
+   */
+    protected function retrieveJwtToken() {
+      $base_url = $this->settings['drupal_base_url'];
+
+      try {
+        $client = new Client([
+          'base_url' => $base_url,
+          'allow_redirects' => TRUE,
+        ]);
+        [$name, $pass] = $this->settings['drupal_basic_auth'];
+        $response = $client->post($base_url . '/user/login?_format=json', [
+          'json' => ['name' => $name, 'pass' => $pass],
+        ]);
+        $response_body = (string) $response->getBody();
+
+        $body_array = json_decode($response_body, true);
+      } catch (RequestException $e) {
+        $this->logger->error("Request for login token returned error.", [
+          'Code' => $response->getStatusCode(),
+          'Message' => $e->getMessage()
+        ]);
+        return NULL;
+      }
+
+      // Validate the response contains a JWT
+      if (!empty($body_array['csrf_token']) && empty($body_array['access_token'])) {
+        $this->logger->error("Logged in successfully but no JWT token was received. ' 
+        . 'Ensure that the Drupal site has the Get JWT on Login module installed and enabled.", [
+          'name' => $name
+        ]);
+        return NULL;
+      }
+      elseif (empty($body_array['access_token'])) {
+        $this->logger->error("Invalid response body from Drupal site. Check debug info.");
+        $this->logger->debug("Response body", [
+          'body' => $response_body
+        ]);
+      }
+
+      $this->logger->info("Retrieved login token for user.", [
+        'name' => $name
+      ]);
+      return $body_array['access_token'];
+    }
+
+  /**
+   * Set some configuration defaults.
+   * @return void
+   */
+  private function setDefaults(): void {
+
+    $this->settings['http_timeout'] = (!isset($this->settings['http_timeout'])) ?
+      60 : $this->settings['http_timeout'];
+
+    $this->settings['verify_ca'] = (!isset($this->settings['verify_ca'])) ?
+      TRUE : $this->settings['verify_ca'];
+    $this->settings['hash_algorithm'] = (!isset($this->settings['hash_algorithm'])) ?
+      'sha1' : $this->settings['hash_algorithm'];
+    $this->settings['include_payload_oxum'] = (!isset($this->settings['include_payload_oxum'])) ?
+      TRUE : $this->settings['include_payload_oxum'];
+    $this->settings['delete_settings_file'] = (!isset($this->settings['delete_settings_file'])) ?
+      FALSE : $this->settings['delete_settings_file'];
+    $this->settings['log_bag_location'] = (!isset($this->settings['log_bag_location'])) ?
+      FALSE : $this->settings['log_bag_location'];
+    $this->settings['register_bags_with_islandora'] = (!isset($this->settings['register_bags_with_islandora'])) ?
+      FALSE : $this->settings['register_bags_with_islandora'];
+
+    if (!file_exists($this->settings['output_dir'])) {
+      mkdir($this->settings['output_dir']);
+    }
+    if (!file_exists($this->settings['temp_dir'])) {
+      mkdir($this->settings['temp_dir']);
+    }
+  }
 }

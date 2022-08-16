@@ -12,7 +12,7 @@ not included here, please see the [Islandora Bagger Documentation](https://githu
 3. `php composer.phar install` (or equivalent on your system, e.g., `./composer install`)
 4. `sudo pip3 install bagit fs fs-s3fs Pairtree PyYAML` (to install Python packages required for Post Bag Scripts)
 5. Clone the OCFL tool, `git clone https://github.com/zimeon/ocfl-py.git` (required for OCFL post bag scripts) 
-6. Import the supplementary views in `supplementary/views.tar.gz` (can be done at `/admin/config/development/configuration/full/import`)
+6. Import the supplementary views in `supplementary/config` (can be done by running `drush -y config-import --partial --source="$(pwd)/supplementary/config"` in this folder)
 
 ## Usage
 ### Command Line

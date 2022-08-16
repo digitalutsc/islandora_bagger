@@ -50,9 +50,15 @@ class AddNodeRevisionsJsonld extends AbstractIbPlugin {
     $rev_jsonld = json_decode((string) $rev_jsonld->getBody(), TRUE);
     $rev_json = json_decode((string) $rev_json->getBody(), TRUE);
     $vids = [];
+    $filenames = [];
     for ($i=0; $i < count($rev_json) - 1; $i++) { 
       $vids[] = $rev_json[$i]['vid'][0]['value'];
-      $bag->createFile(json_encode($rev_jsonld[$i], JSON_PRETTY_PRINT), 'node_' . $nid . '/node.v' . $rev_json[$i]['vid'][0]['value'] . ".jsonld");
+      $filename = 'node_' . $nid . '/node.v' . $rev_json[$i]['vid'][0]['value'] . ".jsonld";
+      // Sometimes translations have the same vid so we get an exception. This avoids that.
+      if (!in_array($filename, $filenames)) {
+        $bag->createFile(json_encode($rev_jsonld[$i], JSON_PRETTY_PRINT), $filename);
+        $filenames[] = $filename;
+      }
     }
     return $bag;
   }

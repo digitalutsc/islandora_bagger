@@ -69,6 +69,7 @@ class AddFile_IslandoraLite extends AbstractIbPlugin
             list($file_url, $filename) = $this->getFileInfo($x['field_media_' . $media_types[$p]][$j]['target_id']);
             $file_response = $file_client->get($file_url, ['stream' => true, //$x['field_media_' . $media_types[$p]][$j]['url'], ['stream' => true,
               'timeout' => $this->settings['http_timeout'],
+               'headers' => ['Authorization' => 'Bearer '  . $token],
               'connect_timeout' => $this->settings['http_timeout'],
               'verify' => $this->settings['verify_ca']
             ]);
@@ -110,6 +111,7 @@ class AddFile_IslandoraLite extends AbstractIbPlugin
         list($tn_url, $tn_name) = $this->getFileInfo($x['thumbnail'][0]['target_id']);
         $file_response = $file_client->get($tn_url, ['stream' => true, //$x['thumbnail'][0]['url'], ['stream' => true,
           'timeout' => $this->settings['http_timeout'],
+          'headers' => ['Authorization' => 'Bearer '  . $token],                                 
           'connect_timeout' => $this->settings['http_timeout'],
           'verify' => $this->settings['verify_ca']
         ]);

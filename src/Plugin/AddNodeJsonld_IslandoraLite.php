@@ -40,6 +40,7 @@ class AddNodeJsonld_IslandoraLite extends AbstractIbPlugin
         $client = new \GuzzleHttp\Client();
         $url = $this->settings['drupal_base_url'] . '/node/' . $nid;
         $response = $client->request('GET', $url, [
+            'headers' => ['Authorization' => 'Bearer ' . $token],
             'http_errors' => false,
             'query' => ['_format' => 'jsonld']
         ]);

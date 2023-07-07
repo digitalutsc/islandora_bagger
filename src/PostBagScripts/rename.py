@@ -17,6 +17,10 @@ if yml['serialize'] == 'zip':
     parent_dir = yml['output_dir']
     directory = "rename_temps"
     path = os.path.join(parent_dir, directory)
+    
+    if os.path.isdir(path):
+        shutil.rmtree(path)
+
     os.mkdir(path)
     with zipfile.ZipFile(sys.argv[2], 'r') as zip_ref:
         zip_ref.extractall(path)

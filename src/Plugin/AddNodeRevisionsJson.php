@@ -120,7 +120,7 @@ class AddNodeRevisionsJson extends AbstractIbPlugin {
           //skip over duplicates
           if (!in_array($fields[$i], array_keys($taxonomy_json))) { //error checking
             if (!in_array($fields[$i], $invalids)) { //invalid field
-              echo "\033[01;31m ERROR: invalid field, \033[0m" . "\033[01;31m'" . $fields[$i] . "', skipping...\033[0m\n";
+              #echo "\033[01;31m ERROR: invalid field, \033[0m" . "\033[01;31m'" . $fields[$i] . "', skipping...\033[0m\n";
               $invalids[] = $fields[$i];
             }
             continue;

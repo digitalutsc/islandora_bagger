@@ -29,7 +29,7 @@ def create_update_ocfl_object(ark_id, source_dir, ocfl_object_dir):
     create_update_success = "Invalid"
     try:
         if os.path.isdir(ocfl_object_dir):
-            output = subprocess.check_output(["ocfl-object.py", "--update", "--id", ark_id, "--src", source_dir, "--objdir", ocfl_object_dir, "-v"], stderr=subprocess.STDOUT)    
+            output = subprocess.check_output(["ocfl-object.py", "--update", "--id", ark_id, "--src", source_dir, "--objdir", ocfl_object_dir, "-v"], stderr=subprocess.STDOUT)
         else:
             output = subprocess.check_output(["ocfl-object.py", "--create", "--id", ark_id, "--src", source_dir, "--objdir", ocfl_object_dir], stderr=subprocess.STDOUT)
         output = subprocess.check_output(["ocfl-validate.py", ocfl_object_dir], stderr=subprocess.STDOUT)
@@ -43,8 +43,8 @@ def zipdir(path, zipfile_name):
     # ziph is zipfile handle
     for root, dirs, files in os.walk(path):
         for file in files:
-            zipfile_name.write(os.path.join(root, file), 
-                       os.path.relpath(os.path.join(root, file), 
+            zipfile_name.write(os.path.join(root, file),
+                       os.path.relpath(os.path.join(root, file),
                                        os.path.join(path, '..')))
 
 node_id = sys.argv[1]
@@ -60,7 +60,7 @@ bags_report_file_path = "bags_report.csv"
 # Get dir and path info via the bagger config file
 with open(config_file_path) as f:
     yml = yaml.safe_load(f)
-    
+
 output_dir = yml["output_dir"]
 source_dir = output_dir + "/" + str(node_id)
 path_to_zip = source_dir + ".zip"
@@ -74,11 +74,13 @@ else:
     print("Items bag zip does not exist.")
 
 try:
-    # Get the ARK 
+    # Get the ARK
     df = pd.read_csv(bags_report_file_path)
     df["node_id"] = df["node_id"].astype(str)
 
     ark_id = lookup_fn(df, "node_id", str(node_id), "ark_id", idx=0)
+    ark_id = ark_id.replace("/", "_")
+
     ocfl_object_dir = output_dir +  "/" + str(ark_id)
 
     if os.path.isfile(ocfl_object_dir + ".zip"):
@@ -87,7 +89,7 @@ try:
 
     # Create/update and validate ocfl object
     ocfl_object_status = create_update_ocfl_object(ark_id, source_dir, ocfl_object_dir)
-    
+
     with zipfile.ZipFile(ocfl_object_dir + ".zip", 'w', zipfile.ZIP_DEFLATED) as zip_file:
         zipdir(ocfl_object_dir, zip_file)
 

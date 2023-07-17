@@ -45,8 +45,8 @@ class AddNodeJsonld_IslandoraLite extends AbstractIbPlugin
             'query' => ['_format' => 'jsonld']
         ]);
         $node_jsonld = (string) $response->getBody();
-        $bag->createFile($node_jsonld, 'node_' . $nid . '/node.jsonld');
-
+        $filename = 'node.v' . $vid . ".jsonld";
+        $bag->createFile($node_jsonld, 'node_' . $nid . '/' . $filename);
         return $bag;
     }
   /**
